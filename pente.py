@@ -1,10 +1,11 @@
 import random
+import sys
 
 def main():
 	board = initializeBoard()
 	token = random.choice(["R", "B"])
 	printBoard(board)
-	board = generateRandomBoard(board, token, 150)
+	board = generateRandomBoard(board, token, 200)
 	for i in range(5):
 		print(" ")
 	printBoard(board)
@@ -49,9 +50,11 @@ def generateRandomBoard(board, token, numberOfTurns):
 	return board
 
 def generateCreatedBoard(board, token, numberOfTurns):
-	board[1][1] = 'R'
-	board[2][1] = "R"
-	board[3][1] = "R"
+	board[1][1] = 'B'
+	board[1][2] = "R"
+	board[1][3] = "R"
+	board[1][4] = "R"
+	board[1][5] = "R"
 	return board
 
 def isValidSpot(xcord, ycord, board):
@@ -62,26 +65,40 @@ def isValidSpot(xcord, ycord, board):
 
 
 def isPatterns(board, token):
-	patterns = [ { "name": "Open Three", "tokens": [ "open", "token", "token", "token", "open" ] } ]
+	patternsFound = []
+	openThree = { "name": "Open Three", "tokens": [ "open", "token", "token", "token", "open" ] }
+	openFour = { "name": "Open Four", "tokens": [ "open", "token", "token", "token", "token", "open" ] }
+	holedOpenFourOne = { "name": "Holed Open Four", "tokens": [ "open", "token", "open", "token", "token", "open" ] }
+	holedOpenFourTwo = { "name": "Holed Open Four", "tokens": [ "open", "token", "token", "open", "token", "open" ] }
+	five = { "name": "Five - Won", "tokens": [ "token", "token", "token", "token", "token" ] }
+	closedFourOne = { "name": "Closed Four", "tokens": [ "token", "token", "token", "token", "closed", "open" ] }
+	closedFourTwo = { "name": "Closed Four", "tokens": [ "closed", "token", "token", "token", "token", "open" ] }
+	holedFiveOne =  { "name": "Holed Five", "tokens": [ "open", "token", "token", "token", "open", "token" ] }
+	holedFiveTwo = { "name": "Holed Five", "tokens": [ "token", "open", "token", "token", "token", "open" ] }
+	holedFiveThree = { "name": "Holed Five", "tokens": [ "open", "token", "token", "open", "token", "token", "open" ] }
+	patterns = [ openThree, openFour, holedOpenFourOne, holedOpenFourTwo, five, closedFourOne, closedFourTwo, holedFiveOne, holedFiveTwo, holedFiveThree  ]
 	for pattern in patterns:
-		isPattern(board, token, pattern)
+		isPattern(board, token, pattern, patternsFound)
+	return patternsFound
 
 
-def isPattern(board, token, pattern):
+def isPattern(board, token, pattern, patternsFound):
 	for row in range(0, 18):
 		for col in range(0, 18):
 			position = {"row": row, "col": col}
-			isPatternAtPosition(board, token, pattern, position)
+			isPatternAtPosition(board, token, pattern, position, patternsFound)
 
-def isPatternAtPosition(board, token, pattern, position):
+def isPatternAtPosition(board, token, pattern, position, patternsFound):
 	directions = [ { "name": "East", "rowDelta": 0, "colDelta": 1 }, { "name": "South-East", "rowDelta": 1, "colDelta": 1 }, { "name": "South", "rowDelta": 1, "colDelta": 0 }, { "name": "South-West", "rowDelta": 1, "colDelta": -1 } ]
 	for direction in directions:
 		found = isPatternAtPositionInDirection(board, token, pattern, position, direction)
-		if found != False:
-
-			print(pattern["name"] + " detected. Direction - " + direction["name"] + ". Color - " + token)
-			print("Yes. Row: " + str(position["row"]) + ", Column: " + str(position["col"] + 1))
-
+		if found:
+			patternsFound.append({"name": "open three", "direction": direction["name"], "position": position})
+			print(pattern["name"] + " detected. Direction - " + direction["name"] + ". Color - " + token + ". Position - " + str(position["row"]) + ", " + str(position["col"]))
+			if pattern["name"] == "Five - Won":
+				print(token + " won!")
+				sys.exit()
+			
 # board: 19x19 array
 # position: dictionary with row, col
 # pattern: dictionary with name and tokens [ 'closed', 'token', 'token' ...]
