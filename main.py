@@ -1,6 +1,6 @@
 from tkinter import *
 from view.images import *
-import controller2 as controller
+import controller
 
 
 game = None
