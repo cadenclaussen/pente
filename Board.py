@@ -1,8 +1,10 @@
 class Board:
     board = None
 
+
     def __init__(self, board):
         self.board = board
+
 
     def initialize(self):
         print("Initializing board")
@@ -10,7 +12,7 @@ class Board:
             self.board.append([])
             for col in range(19):
                 self.board[row].append(".")
-    return self.board
+
 
     def print(self):
         print("   ", end="")
@@ -23,6 +25,7 @@ class Board:
                 print(str(self.board[row][col]) + "   ", end="")
             print(" ")
 
+
     def generateRandom(self, color, numberOfTurns):
         for _ in range(numberOfTurns):
             validSpot = False
@@ -32,7 +35,7 @@ class Board:
                 validSpot = isValidSpot(xcord, ycord, self.board)
             self.board[ycord][xcord] = color
             color = controller.switchTurns(color)
-        return board
+
 
     def generateCreated(self):
         self.board[1][1] = 'B'
@@ -42,11 +45,12 @@ class Board:
         self.board[1][5] = "R"
         return self.board
 
+
     def isValidSpot(self, xcord, ycord):
         if self.board[xcord][ycord] == ".":
             return True
-        else:
-            return False
+        return False
+
 
     def isWinningPatterns(self, color):
         patternsFound = []
@@ -60,6 +64,7 @@ class Board:
         for pattern in patterns:
             isPattern(self.board, color, pattern, patternsFound)
         return patternsFound
+
 
     def isCommonPatterns(self, color):
         patternsFound = []
@@ -77,11 +82,13 @@ class Board:
             isPattern(self.board, color, pattern, patternsFound)
         return patternsFound
 
+
     def isPattern(self, color, pattern, patternsFound):
         for row in range(0, 18):
             for col in range(0, 18):
                 position = {"arow": row, "col": col}
                 isPatternAtPosition(self.board, color, pattern, position, patternsFound)
+
 
     def isPatternAtPosition(self, color, pattern, position, patternsFound):
         directions = [ { "name": "East", "rowDelta": 0, "colDelta": 1 }, { "name": "South-East", "rowDelta": 1, "colDelta": 1 }, { "name": "South", "rowDelta": 1, "colDelta": 0 }, { "name": "South-West", "rowDelta": 1, "colDelta": -1 } ]
@@ -107,6 +114,7 @@ class Board:
                     print(colr + " won!")
                     sys.exit()
 
+
     def isPatternAtPositionInDirection(self, color, pattern, position, direction):
         isBeadAtSpot = False
         for expectedToken in pattern["tokens"]:
@@ -117,6 +125,7 @@ class Board:
                 return False
 
         return True
+
 
     def isToken(self, color, position, expectedToken):
         row = position["row"]
@@ -146,10 +155,8 @@ class Board:
             if self.board[row][col] == "." and expectedToken == "open":
                 return True
 
-
         if expectedToken == "closed" and (row > 18 or row < 0 or col > 18 or col < 0):
                 return True
-
 
         if row > 18:
             return False

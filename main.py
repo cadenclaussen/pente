@@ -1,37 +1,43 @@
 from tkinter import *
 from view.images import *
-import controller
+import controller2 as controller
 
 
-currentPlayer = 0
-beadsPlayed = 0
+game = None
+board = None
+players = None
+currentPlayer = None
+currentPlayerKey = None
+boardLabelFrame = None
 
 
 def main():
+    global boardLabelFrame, game, board, players, currentPlayer, currentPlayerKey
+
     root = Tk()
     root.title("Pente")
     root.geometry("760x760")
 
-    window = LabelFrame(root, padx=1, pady=1, bg="grey")
-    window.pack()
+    windowFrame = LabelFrame(root, padx=1, pady=1, bg="grey")
+    windowFrame.pack()
 
-    header = LabelFrame(window, padx=10, pady=10)
-    header.grid(row=0, column=0, columnspan=2, sticky=W+E)
-    label = Label(header, text="Header Frame")
+    headerLabelFrame = LabelFrame(windowFrame, padx=10, pady=10)
+    headerLabelFrame.grid(row=0, column=0, columnspan=2, sticky=W+E)
+    label = Label(headerLabelFrame, text="Header Frame")
     label.pack()
 
     # Create the players pane
-    players = LabelFrame(window, padx=10, pady=10, width=30)
-    players.grid(row=1, column=0, sticky=N+S)
-    label = Label(players, text="Players Frame")
+    playersLabelFrame = LabelFrame(windowFrame, padx=10, pady=10, width=30)
+    playersLabelFrame.grid(row=1, column=0, sticky=N+S)
+    label = Label(playersLabelFrame, text="Players Frame")
     label.pack()
 
     # Create the players pane
-    board = LabelFrame(window, padx=20, pady=20)
-    board.grid(row=1, column=1)
+    boardLabelFrame = LabelFrame(windowFrame, padx=20, pady=20)
+    boardLabelFrame.grid(row=1, column=1)
 
     # Create the footer pane
-    footer = LabelFrame(window, padx=20, pady=20)
+    footer = LabelFrame(windowFrame, padx=20, pady=20)
     footer.grid(row=2, column=0, columnspan=2, sticky=W+E)
     label = Label(footer, text="Footer Frame")
     label.pack()
@@ -42,85 +48,101 @@ def main():
     for row in range(19):
         for column in range(19):
             image = getImage(row, column)
-            label = Label(board, image=image, width=27, height=27, padx=0, pady=0)
+            label = Label(boardLabelFrame, image=image, width=27, height=27, padx=0, pady=0)
             label.grid(row=row, column=column, padx=0, pady=0)
             label.bind("<Enter>", enter)
             label.bind("<Leave>", leave)
             label.bind("<Button-1>", playBead)
 
-
-    controller.newGame()
-    currentPlayer = controller.getColorFirst()
+    newGame()
 
     root.mainloop()
 
 
+def newGame():
+    global boardLabelFrame, game, board, players, currentPlayer, currentPlayerKey
+
+    # Add all the 19x19 images to the board pane to initialize the board
+    # - For each spot on the board, bind enter, leave, and playBead functions
+    # - Upper left is [0, 0], bottom right is [18, 18], middle is [9, 9]
+    for row in range(19):
+        for column in range(19):
+            image = getImage(row, column)
+            label = Label(boardLabelFrame, image=image, width=27, height=27, padx=0, pady=0)
+            label.grid(row=row, column=column, padx=0, pady=0)
+            label.bind("<Enter>", enter)
+            label.bind("<Leave>", leave)
+            label.bind("<Button-1>", playBead)
+
+    # Controller logic
+    controller.newGame()
+    game = controller.getGame();
+    board = controller.getBoard();
+    players = controller.getPlayers();
+    currentPlayer = controller.getCurrentPlayer();
+    currentPlayerKey = currentPlayer
+
+
 def enter(e):
-    global beadsPlayed
+    global game, board, players, currentPlayer, currentPlayerKey
 
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
+#   print('Entering:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
 
-#    print('Entering:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
-    if beadsPlayed == 0 and (row != 9 or column != 9):
+    if game.beadsPlayed == 0 and (row != 9 or column != 9):
         return
 
-    if beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
+    if game.beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
         return
 
-    # Show the players bead so they can visualize what it would look like
-    e.widget.config(image=getBeadImage(row, column, currentPlayer))
+    # Show the players bead so they can visualize what it would look
+    # like in that position on the board.  Note: This temporary bead
+    # is removed by the leave() function when the player's mouse
+    # leaves the position.
+    e.widget.config(image=getBeadImage(row, column, currentPlayerKey))
 
 
+# When the mouse enters the board, if the spot is empty, the leave
+# event will be bound to the leave() function.  Since the enter event
+# previously invoked the enter() function temporarily putting a bead
+# in the spot, the leave() function is responsible for setting the
+# spot back to the image that indicates the spot is empty.
 def leave(e):
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
- #   print('Leaving:', str(row) + '/' + str(column));
     e.widget.config(image=getImage(row, column))
 
 
 def playBead(e):
-    global currentPlayer, beadsPlayed
+    global game, board, players, currentPlayer, currentPlayerKey
 
+    # Get the row and column the bead was played at
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
-    print('playing bead:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
+    # print('playing bead:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
 
-    if beadsPlayed == 0 and (row != 9 or column != 9):
+    if game.beadsPlayed == 0 and (row != 9 or column != 9):
         print('Opening move must be at 9,9');
         return
 
-    if int(beadsPlayed) == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
-        print('Second move must be ...');
+    if game. beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
+        print('Your second move must be 3 spots away from the center')
         return
 
-    e.widget.config(image=getBeadImage(row, column, currentPlayer))
+    e.widget.config(image=getBeadImage(row, column, currentPlayerKey))
     e.widget.unbind("<Enter>")
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
-    position = {"row": int(row), "col": int(column)}
+    controller.playBead({ "row": row, "col": column });
+    game = controller.getGame();
+    board = controller.getBoard();
+    players = controller.getPlayers();
+    currentPlayer = controller.getCurrentPlayer();
+    currentPlayerKey = currentPlayer
 
-    if beadsPlayed % 2 == 1:
-       patternsFound = controller.beadPlayed("B", position)
-    if beadsPlayed % 2 == 0:
-        patternsFound = controller.beadPlayed("R", position)
-
-    currentPlayer = controller.switchTurns(currentPlayer)
-
-    beadsPlayed += 1
-    print(beadsPlayed)
-
-
-
-
-def nextPlayer():
-    global currentPlayer, beadsPlayed
-    beadsPlayed += 1
-    if currentPlayer == 0:
-        currentPlayer = 1
-    else:
-        currentPlayer = 0
-
+    if (game.isWinner()):
+        newGame()
 
 main()
