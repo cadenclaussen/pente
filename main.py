@@ -1,5 +1,6 @@
 from tkinter import *
 from view.images import *
+import controller
 
 
 currentPlayer = 0
@@ -47,6 +48,10 @@ def main():
             label.bind("<Leave>", leave)
             label.bind("<Button-1>", playBead)
 
+
+    controller.newGame()
+    currentPlayer = controller.getColorFirst()
+
     root.mainloop()
 
 
@@ -56,7 +61,7 @@ def enter(e):
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
 
-    print('Entering:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
+#    print('Entering:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
     if beadsPlayed == 0 and (row != 9 or column != 9):
         return
 
@@ -70,7 +75,7 @@ def enter(e):
 def leave(e):
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
-    print('Leaving:', str(row) + '/' + str(column));
+ #   print('Leaving:', str(row) + '/' + str(column));
     e.widget.config(image=getImage(row, column))
 
 
@@ -85,7 +90,7 @@ def playBead(e):
         print('Opening move must be at 9,9');
         return
 
-    if int(beadsPlayed) == 1 and (row > 6 and row < 12 and column > 6 and column < 12):
+    if int(beadsPlayed) == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
         print('Second move must be ...');
         return
 
@@ -93,7 +98,20 @@ def playBead(e):
     e.widget.unbind("<Enter>")
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
-    nextPlayer()
+
+    position = {"row": int(row), "col": int(column)}
+
+    if beadsPlayed % 2 == 1:
+       patternsFound = controller.beadPlayed("B", position)
+    if beadsPlayed % 2 == 0:
+        patternsFound = controller.beadPlayed("R", position)
+
+    currentPlayer = controller.switchTurns(currentPlayer)
+
+    beadsPlayed += 1
+    print(beadsPlayed)
+
+
 
 
 def nextPlayer():

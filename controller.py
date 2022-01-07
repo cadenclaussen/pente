@@ -1,6 +1,8 @@
 import random
 import sys
 
+board = None
+
 def main():
 	board = initializeBoard()
 	token = random.choice(["R", "B"])
@@ -13,7 +15,39 @@ def main():
 	isPatterns(board, "B")
 
 
+def newGame():
+	global board
+	board = None
+	board = initializeBoard()
+	printBoard(board)
+
+def getColorFirst():
+	return random.randint(0, 1)
+
+def beadPlayed(color, position):
+	global board
+	isWinningPatterns(board, color)
+	color = switchTurns(color)
+	patternsFound = isCommonPatterns(board, color)
+	#suggestions = suggestOptions(board)
+	printOntoBoard(board, position, color)
+	return patternsFound
+
+def printOntoBoard(board, position, color):
+	if color == 1:
+		color = "B"
+	if color == 0:
+		color = "R"
+	board[position["row"]][position["col"]] = color
+	printBoard(board)
+
+def suggestOptions(board):
+	pass
+
 def initializeBoard():
+	blueJumps = 0
+	redJumps = 0
+	print("Initializing board")
 	board = []
 	for row in range(19):
 		board.append([])
@@ -29,14 +63,14 @@ def printBoard(board):
 	for row in range(19):
 		print(str(row % 10)  + "  ", end="")
 		for col in range(19):
-			print(board[row][col] + "   ", end="")
+			print(str(board[row][col]) + "   ", end="")
 		print(" ")
 
 def switchTurns(token):
-	if token == "R":
-		return "B"
+	if token == 1:
+		return 0
 	else:
-		return "R"
+		return 1
 
 def generateRandomBoard(board, token, numberOfTurns):
 	for _ in range(numberOfTurns):
@@ -63,20 +97,31 @@ def isValidSpot(xcord, ycord, board):
 	else:
 		return False
 
+def isWinningPatterns(board, token):
+	patternsFound = []
+	five = { "name": "Five - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "nonToken" ] }
+	six = { "name": "Six - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "nonToken" ] }
+	seven = { "name": "Seven - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "token", "nonToken" ] }
+	eight = { "name": "Eight - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "token", "token", "nonToken" ] }
+	nine = { "name": "Nine - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "token", "token", "token", "nonToken" ] }
+	jump = {"name": "jump", "tokens": [ "oposite", "token", "token", "oposite" ]}
+	patterns  = [nine, eight, seven, six, five]
+	for pattern in patterns:
+		isPattern(board, token, pattern, patternsFound)
+	return patternsFound
 
-def isPatterns(board, token):
+def isCommonPatterns(board, token):
 	patternsFound = []
 	openThree = { "name": "Open Three", "tokens": [ "open", "token", "token", "token", "open" ] }
 	openFour = { "name": "Open Four", "tokens": [ "open", "token", "token", "token", "token", "open" ] }
 	holedOpenFourOne = { "name": "Holed Open Four", "tokens": [ "open", "token", "open", "token", "token", "open" ] }
 	holedOpenFourTwo = { "name": "Holed Open Four", "tokens": [ "open", "token", "token", "open", "token", "open" ] }
-	five = { "name": "Five - Won", "tokens": [ "token", "token", "token", "token", "token" ] }
 	closedFourOne = { "name": "Closed Four", "tokens": [ "token", "token", "token", "token", "closed", "open" ] }
 	closedFourTwo = { "name": "Closed Four", "tokens": [ "closed", "token", "token", "token", "token", "open" ] }
 	holedFiveOne =  { "name": "Holed Five", "tokens": [ "open", "token", "token", "token", "open", "token" ] }
 	holedFiveTwo = { "name": "Holed Five", "tokens": [ "token", "open", "token", "token", "token", "open" ] }
 	holedFiveThree = { "name": "Holed Five", "tokens": [ "open", "token", "token", "open", "token", "token", "open" ] }
-	patterns = [ openThree, openFour, holedOpenFourOne, holedOpenFourTwo, five, closedFourOne, closedFourTwo, holedFiveOne, holedFiveTwo, holedFiveThree  ]
+	patterns = [ openThree, openFour, holedOpenFourOne, holedOpenFourTwo, closedFourOne, closedFourTwo, holedFiveOne, holedFiveTwo, holedFiveThree  ]
 	for pattern in patterns:
 		isPattern(board, token, pattern, patternsFound)
 	return patternsFound
@@ -93,8 +138,21 @@ def isPatternAtPosition(board, token, pattern, position, patternsFound):
 	for direction in directions:
 		found = isPatternAtPositionInDirection(board, token, pattern, position, direction)
 		if found:
-			patternsFound.append({"name": "open three", "direction": direction["name"], "position": position})
+			patternsFound.append({"name": pattern["name"], "direction": direction["name"], "position": position})
 			print(pattern["name"] + " detected. Direction - " + direction["name"] + ". Color - " + token + ". Position - " + str(position["row"]) + ", " + str(position["col"]))
+			if pattern["name"] == "jump":
+				if token == "R":
+					redJumps += 1
+				if token == "B":
+					blueJumps += 1
+
+				if redJumps == 5:
+					print("Red won!")
+					sys.exit()
+				if blueJumps == 5:
+					print("Blue won!")
+					sys.exit()
+
 			if pattern["name"] == "Five - Won":
 				print(token + " won!")
 				sys.exit()
@@ -122,8 +180,33 @@ def isToken(board, token, position, expectedToken):
 	row = position["row"]
 	col = position["col"]
 
+	if expectedToken == "oposite":
+		if token == "R":
+			oposingToken = "B"
+		if token == "B":
+			oposingToken = "R"
+
+		if board[row][col] == oposingToken:
+			return True
+
+	if expectedToken == "nonToken":
+		if expectedToken == "closed" and (row > 18 or row < 0 or col > 18 or col < 0):
+			return True
+
+		if token == "R":
+			oposingToken = "B"
+		if token == "B":
+			oposingToken = "R"
+
+		if board[row][col] == oposingToken and expectedToken == "closed":
+			return True
+
+		if board[row][col] == "." and expectedToken == "open":
+			return True
+
+
 	if expectedToken == "closed" and (row > 18 or row < 0 or col > 18 or col < 0):
-		return True
+			return True
 
 
 	if row > 18:
@@ -138,9 +221,9 @@ def isToken(board, token, position, expectedToken):
 	if board[row][col] == token and expectedToken == "token":
 		return True
 
-	if token == "R":
+	if token == 0:
 		oposingToken = "B"
-	if token == "B":
+	if token == 1:
 		oposingToken = "R"
 
 	if board[row][col] == oposingToken and expectedToken == "closed":
@@ -153,4 +236,4 @@ def isToken(board, token, position, expectedToken):
 
 
 
-main()
+#main()
