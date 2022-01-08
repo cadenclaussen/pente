@@ -7,22 +7,22 @@ def main():
     board = Board()
     player1 = Player("Shane", "Blue", 0)
     player2 = Player("Caden", "Red", 1)
-    currentPlayers = [ player1, player2 ]
-    generateRandomBoard(board, currentPlayers, 150)
-    board.findWinningPatterns(player1)
-    board.findWinningPatterns(player2)
+    players = [ player1, player2 ]
+    generateRandomBoard(board, players, 150)
+    # board.findWinningPatterns(player1)
+    # board.findWinningPatterns(player2)
     for row in range(19):
         for col in range(19):
             board.findJumpPatterns(player1, { "row": row, "col": col })
             board.findJumpPatterns(player2, { "row": row, "col": col })
-    board.findPatternsToAnnounce(player1)
-    board.findPatternsToAnnounce(player2)
+    # board.findPatternsToAnnounce(player1)
+    # board.findPatternsToAnnounce(player2)
     print()
     print(board)
 
 
-def generateRandomBoard(board, currentPlayers, numberOfTurns):
-    currentPlayer = currentPlayers[0]
+def generateRandomBoard(board, players, numberOfTurns):
+    currentPlayer = players[0]
     for _ in range(numberOfTurns):
         while True:
             row = random.randint(0, 18)
@@ -31,9 +31,9 @@ def generateRandomBoard(board, currentPlayers, numberOfTurns):
                 break
         board.board[col][row] = currentPlayer.color[0]
         if currentPlayer.key == 0:
-            currentPlayer = currentPlayers[1]
+            currentPlayer = players[1]
         else:
-            currentPlayer = currentPlayers[0]
+            currentPlayer = players[0]
 
 
 def generateCreatedBoard(board):

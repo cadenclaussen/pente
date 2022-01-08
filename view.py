@@ -1,5 +1,5 @@
 from tkinter import *
-from view.images import *
+from lib.images import *
 import controller
 
 
@@ -7,12 +7,11 @@ game = None
 board = None
 players = None
 currentPlayer = None
-currentPlayerKey = None
 boardLabelFrame = None
 
 
 def main():
-    global boardLabelFrame, game, board, players, currentPlayer, currentPlayerKey
+    global boardLabelFrame, game, board, players, currentPlayer
 
     root = Tk()
     root.title("Pente")
@@ -56,11 +55,12 @@ def main():
 
     newGame()
 
+
     root.mainloop()
 
 
 def newGame():
-    global boardLabelFrame, game, board, players, currentPlayer, currentPlayerKey
+    global boardLabelFrame, game, board, players, currentPlayer
 
     # Add all the 19x19 images to the board pane to initialize the board
     # - For each spot on the board, bind enter, leave, and playBead functions
@@ -75,20 +75,14 @@ def newGame():
             label.bind("<Button-1>", playBead)
 
     # Controller logic
-    controller.newGame()
-    game = controller.getGame();
-    board = controller.getBoard();
-    players = controller.getPlayers();
-    currentPlayer = controller.getCurrentPlayer();
-    currentPlayerKey = currentPlayer
+    game, board, players, currentPlayer = controller.newGame()
 
 
 def enter(e):
-    global game, board, players, currentPlayer, currentPlayerKey
+    global game, board, players, currentPlayer
 
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
-    # print("View: considering ", str(row) + ", " + str(column));
 
     if game.beadsPlayed == 0 and (row != 9 or column != 9):
         return
@@ -100,7 +94,7 @@ def enter(e):
     # like in that position on the board.  Note: This temporary bead
     # is removed by the leave() function when the player's mouse
     # leaves the position.
-    e.widget.config(image=getBeadImage(row, column, currentPlayerKey))
+    e.widget.config(image=getBeadImage(row, column, currentPlayer.color))
 
 
 # When the mouse enters the board, if the spot is empty, the leave
@@ -115,35 +109,26 @@ def leave(e):
 
 
 def playBead(e):
-    global game, board, players, currentPlayer, currentPlayerKey
+    global game, board, players, currentPlayer
 
     # Get the row and column the bead was played at
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
-    print("View: playing at ", str(row) + ", " + str(column));
 
     if game.beadsPlayed == 0 and (row != 9 or column != 9):
-        print("View: Opening move must be at 9, 9");
         return
 
     if game. beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
-        print("View: Starting player's second move must be 3 spots away from the center")
         return
 
-    e.widget.config(image=getBeadImage(row, column, currentPlayerKey))
+    e.widget.config(image=getBeadImage(row, column, currentPlayer.color))
     e.widget.unbind("<Enter>")
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
-    controller.playBead({ "row": row, "col": column });
-    game = controller.getGame();
-    board = controller.getBoard();
-    players = controller.getPlayers();
-    currentPlayer = controller.getCurrentPlayer();
-    currentPlayerKey = currentPlayer
+    game, board, players, currentPlayer = controller.playBead({ "row": row, "col": column });
 
     if (game.isWinner()):
-        print("View: Winner!!!")
         newGame()
 
 main()
