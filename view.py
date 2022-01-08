@@ -126,7 +126,18 @@ def playBead(e):
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
-    game, board, players, currentPlayer = controller.playBead({ "row": row, "col": column });
+    game, board, players, currentPlayer = controller.playBead({ "row": row, "column": column });
+    if (board.beadsToRemove):
+        for position in board.beadsToRemove:
+            row = position["row"]
+            column = position["column"]
+            image = getImage(row, column)
+            label = Label(boardLabelFrame, image=image, width=27, height=27, padx=0, pady=0)
+            label.grid(row=row, column=column, padx=0, pady=0)
+            label.bind("<Enter>", enter)
+            label.bind("<Leave>", leave)
+            label.bind("<Button-1>", playBead)
+
 
     if (game.isWinner()):
         newGame()

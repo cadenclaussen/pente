@@ -33,6 +33,10 @@ def playBead(position):
     # TODO: If jumps exist, remove opponent beads
     jumps = board.findJumpPatterns(currentPlayer, position)
 
+    # TODO: This is temporary
+    if game.beadsPlayed == 4:
+        board.beadsToRemove = [ { "row": 9, "column": 9 }, { "row": 10, "column": 10 } ]
+
     # TODO: Process announce patterns
     board.findPatternsToAnnounce(currentPlayer)
 
@@ -40,7 +44,7 @@ def playBead(position):
     scorePatterns = board.findScorePatterns(currentPlayer)
 
     print(board)
-    print(str(currentPlayer) + " played at " + str(position["col"]) + ", " + str(position["row"]));
+    print(str(currentPlayer) + " played at " + str(position["column"]) + ", " + str(position["row"]));
 
 
 

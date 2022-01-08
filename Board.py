@@ -3,13 +3,15 @@ import sys
 class Board:
     def __init__(self):
         self.board = []
+        self.beadsToRemove = None
         for row in range(19):
             self.board.append([])
-            for col in range(19):
+            for column in range(19):
                 self.board[row].append(".")
 
+
     def playBead(self, currentPlayer, position):
-        self.board[position["col"]][position["row"]] = currentPlayer.color[0];
+        self.board[position["column"]][position["row"]] = currentPlayer.color[0];
 
 
     def findWinningPatterns(self, currentPlayer):
@@ -67,27 +69,27 @@ class Board:
 
     def findPattern(self, currentPlayer, pattern, patternsFound):
         for row in range(19):
-            for col in range(19):
-                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "col": col }, patternsFound, False)
+            for column in range(19):
+                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, patternsFound, False)
 
 
     def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full):
         directions = []
-        directions.append({ "name": "east", "rowDelta": 0, "colDelta": 1 })
-        directions.append({ "name": "southeast", "rowDelta": 1, "colDelta": 1 })
-        directions.append({ "name": "south", "rowDelta": 1, "colDelta": 0 })
-        directions.append({ "name": "southwest", "rowDelta": 1, "colDelta": -1 })
+        directions.append({ "name": "east", "rowDelta": 0, "columnDelta": 1 })
+        directions.append({ "name": "southeast", "rowDelta": 1, "columnDelta": 1 })
+        directions.append({ "name": "south", "rowDelta": 1, "columnDelta": 0 })
+        directions.append({ "name": "southwest", "rowDelta": 1, "columnDelta": -1 })
 
         if (full):
-            directions.append({ "name": "west", "rowDelta": 0, "colDelta": -1 })
-            directions.append({ "name": "northwest", "rowDelta": -1, "colDelta": 1 })
-            directions.append({ "name": "north", "rowDelta": 0, "colDelta": 1 })
-            directions.append({ "name": "northeast", "rowDelta": -1, "colDelta": 1 })
+            directions.append({ "name": "west", "rowDelta": 0, "columnDelta": -1 })
+            directions.append({ "name": "northwest", "rowDelta": -1, "columnDelta": 1 })
+            directions.append({ "name": "north", "rowDelta": 0, "columnDelta": 1 })
+            directions.append({ "name": "northeast", "rowDelta": -1, "columnDelta": 1 })
 
         for direction in directions:
             if self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction):
                 patternsFound.append({ "name": pattern["name"], "direction": direction["name"], "position": position })
-                print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["col"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
+                print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["column"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
 
 
     def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction):
@@ -96,7 +98,7 @@ class Board:
                 return False
 
             # Update the position to check for the next expected token
-            position = { "row": (position["row"] + direction["rowDelta"]), "col": (position["col"] + direction["colDelta"])}
+            position = { "row": (position["row"] + direction["rowDelta"]), "column": (position["column"] + direction["columnDelta"])}
 
         # If we made it this far, all the tokens in the pattern were
         # found, so the pattern we were searching for was detected
@@ -105,15 +107,15 @@ class Board:
 
     def expectedTokenAtPosition(self, currentPlayer, position, token):
         row = position["row"]
-        col = position["col"]
+        column = position["column"]
 
         # bead
         #
         # matches a bead played at the position by the current player
         if token == "bead":
-            if row > 18 or row < 0 or col > 18 or col < 0:
+            if row > 18 or row < 0 or column > 18 or column < 0:
                 return False
-            if self.board[col][row] == currentPlayer.color[0]:
+            if self.board[column][row] == currentPlayer.color[0]:
                 return True
             return False
 
@@ -121,9 +123,9 @@ class Board:
         #
         # matches a bead played at the position by an opposing player
         if token == "opponent":
-            if row > 18 or row < 0 or col > 18 or col < 0:
+            if row > 18 or row < 0 or column > 18 or column < 0:
                 return False
-            if self.board[col][row] != '.' and self.board[col][row] != currentPlayer.color[0]:
+            if self.board[column][row] != '.' and self.board[column][row] != currentPlayer.color[0]:
                 return True
             return False
 
@@ -131,9 +133,9 @@ class Board:
         #
         # matches a position with no bead
         if token == "open":
-            if row > 18 or row < 0 or col > 18 or col < 0:
+            if row > 18 or row < 0 or column > 18 or column < 0:
                 return False
-            if self.board[col][row] == '.':
+            if self.board[column][row] == '.':
                 return True
             return False
 
@@ -145,11 +147,11 @@ class Board:
         # 2. another player's bead
         # 3. an open position
         if token == "not-bead":
-            if row > 18 or row < 0 or col > 18 or col < 0:
+            if row > 18 or row < 0 or column > 18 or column < 0:
                 return True
-            if self.board[col][row] != '.' and self.board[col][row] != currentPlayer.color[0]:
+            if self.board[column][row] != '.' and self.board[column][row] != currentPlayer.color[0]:
                 return True
-            if self.board[col][row] == ".":
+            if self.board[column][row] == ".":
                 return True
             return False
 
@@ -159,9 +161,9 @@ class Board:
         # 1. a position that is off the board
         # 2. a position occupied by an opposing player's bead
         if token == "closed":
-            if (row > 18 or row < 0 or col > 18 or col < 0):
+            if (row > 18 or row < 0 or column > 18 or column < 0):
                 return True
-            if self.board[col][row] != '.' and self.board[col][row] != currentPlayer.color[0]:
+            if self.board[column][row] != '.' and self.board[column][row] != currentPlayer.color[0]:
                 return True
             return False
 
@@ -171,12 +173,12 @@ class Board:
 
     def __str__(self):
         s = "   "
-        for col in range(19):
-            s += str(col  % 10) + "  "
+        for column in range(19):
+            s += str(column  % 10) + "  "
         s += "\n"
         for row in range(19):
             s += str(row % 10)  + "  "
-            for col in range(19):
-                s += str(self.board[col][row]) + "  "
+            for column in range(19):
+                s += str(self.board[column][row]) + "  "
             s += "\n"
         return s
