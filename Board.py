@@ -70,7 +70,7 @@ class Board:
     def findPattern(self, currentPlayer, pattern, patternsFound, state):
         for row in range(19):
             for column in range(19):
-                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, patternsFound, False)
+                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, patternsFound, False, state)
 
 
     def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full, state):
@@ -97,6 +97,8 @@ class Board:
         patternRightNowToEmphasise = []
         for token in pattern["tokens"]:
             if not self.expectedTokenAtPosition(currentPlayer, position, token):
+                patternRightNowToEmphasise = []
+                patternRightNowToRemove = []
                 return False
 
             # Update the position to check for the next expected token
@@ -111,7 +113,7 @@ class Board:
         # If we made it this far, all the tokens in the pattern were
         # found, so the pattern we were searching for was detected
         for position in patternRightNowToRemove:
-            board[position["row"]][position["col"]] = "."
+            self.board[position["row"]][position["column"]] = "."
         return True
 
 
