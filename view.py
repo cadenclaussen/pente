@@ -127,7 +127,7 @@ def playBead(e):
     e.widget.unbind("<Button-1>")
 
     game, board, players, currentPlayer = controller.playBead({ "row": row, "column": column });
-    if (board.beadsToRemove):
+    if (board.beadsToRemove != []):
         for position in board.beadsToRemove:
             row = position["row"]
             column = position["column"]

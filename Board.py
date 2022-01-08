@@ -3,7 +3,7 @@ import sys
 class Board:
     def __init__(self):
         self.board = []
-        self.beadsToRemove = None
+        self.beadsToRemove = []
         for row in range(19):
             self.board.append([])
             for column in range(19):
@@ -11,7 +11,7 @@ class Board:
 
 
     def playBead(self, currentPlayer, position):
-        self.board[position["column"]][position["row"]] = currentPlayer.color[0];
+        self.board[position["column"]][position["row"]] = currentPlayer.color[0]
 
 
     def findWinningPatterns(self, currentPlayer):
@@ -24,7 +24,7 @@ class Board:
 
         patternsFound = []
         for pattern in patterns:
-            self.findPattern(currentPlayer, pattern, patternsFound)
+            self.findPattern(currentPlayer, pattern, patternsFound, "bead")
 
         return patternsFound
 
@@ -38,7 +38,7 @@ class Board:
         # 2: Change this code to call findPatternAtPositionInDirection for all 8 directions
         patternsFound = []
         for pattern in patterns:
-            self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, True)
+            self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, True, "opponent")
 
         return patternsFound
 
@@ -58,7 +58,7 @@ class Board:
 
         patternsFound = []
         for pattern in patterns:
-            self.findPattern(currentPlayer, pattern, patternsFound)
+            self.findPattern(currentPlayer, pattern, patternsFound, "bead")
 
         return patternsFound
 
@@ -67,13 +67,13 @@ class Board:
     def findScorePatterns(self, currentPlayer):
         pass
 
-    def findPattern(self, currentPlayer, pattern, patternsFound):
+    def findPattern(self, currentPlayer, pattern, patternsFound, state):
         for row in range(19):
             for column in range(19):
                 self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, patternsFound, False)
 
 
-    def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full):
+    def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full, state):
         directions = []
         directions.append({ "name": "east", "rowDelta": 0, "columnDelta": 1 })
         directions.append({ "name": "southeast", "rowDelta": 1, "columnDelta": 1 })
@@ -87,21 +87,31 @@ class Board:
             directions.append({ "name": "northeast", "rowDelta": -1, "columnDelta": 1 })
 
         for direction in directions:
-            if self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction):
+            if self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction, state):
                 patternsFound.append({ "name": pattern["name"], "direction": direction["name"], "position": position })
                 print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["column"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
 
 
-    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction):
+    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, state):
+        patternRightNowToRemove = []
+        patternRightNowToEmphasise = []
         for token in pattern["tokens"]:
             if not self.expectedTokenAtPosition(currentPlayer, position, token):
                 return False
 
             # Update the position to check for the next expected token
-            position = { "row": (position["row"] + direction["rowDelta"]), "column": (position["column"] + direction["columnDelta"])}
+            if state == token and token == "bead":
+                patternRightNowToEmphasise.append(position)
+            if state == token and token == "opponent":
+                patternRightNowToRemove.append(position)
+                self.beadsToRemove.append(position)
 
+
+            position = { "row": (position["row"] + direction["rowDelta"]), "column": (position["column"] + direction["columnDelta"])}
         # If we made it this far, all the tokens in the pattern were
         # found, so the pattern we were searching for was detected
+        for position in patternRightNowToRemove:
+            board[position["row"]][position["col"]] = "."
         return True
 
 

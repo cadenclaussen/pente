@@ -13,8 +13,8 @@ def main():
     # board.findWinningPatterns(player2)
     for row in range(19):
         for col in range(19):
-            board.findJumpPatterns(player1, { "row": row, "col": col })
-            board.findJumpPatterns(player2, { "row": row, "col": col })
+            board.findJumpPatterns(player1, { "row": row, "column": col })
+            board.findJumpPatterns(player2, { "row": row, "column": col })
     # board.findPatternsToAnnounce(player1)
     # board.findPatternsToAnnounce(player2)
     print()
