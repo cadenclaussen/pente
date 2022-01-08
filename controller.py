@@ -40,7 +40,7 @@ def newGame():
 def playBead(position):
     global game, board, players, currentPlayer
 
-    print('Playing bead at ' + str(position['row']) + '/' + str(position['col']));
+    print("Controller: playing bead at " + str(position["row"]) + ", " + str(position["col"]));
     game.beadsPlayed += 1
     if currentPlayer == 0:
         currentPlayer = 1

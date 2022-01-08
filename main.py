@@ -88,7 +88,7 @@ def enter(e):
 
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
-#   print('Entering:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
+    # print("View: considering ", str(row) + ", " + str(column));
 
     if game.beadsPlayed == 0 and (row != 9 or column != 9):
         return
@@ -120,14 +120,14 @@ def playBead(e):
     # Get the row and column the bead was played at
     row = int(e.widget.grid_info()['row'])
     column = int(e.widget.grid_info()['column'])
-    # print('playing bead:', str(row) + '/' + str(column), 'beadsPlayed', beadsPlayed);
+    print("View: playing at ", str(row) + ", " + str(column));
 
     if game.beadsPlayed == 0 and (row != 9 or column != 9):
-        print('Opening move must be at 9,9');
+        print("View: Opening move must be at 9, 9");
         return
 
     if game. beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
-        print('Your second move must be 3 spots away from the center')
+        print("View: Starting player's second move must be 3 spots away from the center")
         return
 
     e.widget.config(image=getBeadImage(row, column, currentPlayerKey))
@@ -143,6 +143,7 @@ def playBead(e):
     currentPlayerKey = currentPlayer
 
     if (game.isWinner()):
+        print("View: Winner!!!")
         newGame()
 
 main()

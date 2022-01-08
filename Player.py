@@ -1,5 +1,11 @@
 class Player:
-    def __init__(self, color, key, name):
+    name = None
+    color = None
+    key = None
+    jumps = 0
+
+
+    def __init__(self, name, color, key):
+        self.name = name
         self.color = color
-        self.id = key
-        self.name = names
+        self.key = key

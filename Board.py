@@ -1,184 +1,170 @@
+import sys
+
 class Board:
-    board = None
-
-
-    def __init__(self, board):
-        self.board = board
-
-
-    def initialize(self):
-        print("Initializing board")
+    def __init__(self):
+        self.board = []
         for row in range(19):
             self.board.append([])
             for col in range(19):
                 self.board[row].append(".")
 
 
-    def print(self):
-        print("   ", end="")
-        for col in range(19):
-            print(str(col  % 10) + "   ", end="")
-        print()
+    def findWinningPatterns(self, currentPlayer):
+        patterns = []
+        patterns.append({ "name": "Five", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Six", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Seven", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Eight", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Nine", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+
+        patternsFound = []
+        for pattern in patterns:
+            self.findPattern(currentPlayer, pattern, patternsFound)
+
+        return patternsFound
+
+
+    # TODO: If there are three players this needs to be updated so the two opponent beads are the same bead
+    def findJumpPatterns(self, currentPlayer, position):
+        patterns = []
+        patterns.append({ "name": "Jump", "tokens": [ "bead", "opponent", "opponent", "bead" ]})
+
+        # TODO: Update this so the jump is checked in all directions, two options:
+        # 1: Change findPatternAtPosition to take an option to determine which direction set to use
+        # 2: Change this code to call findPatternAtPositionInDirection for all 8 directions
+        patternsFound = []
+        for pattern in patterns:
+            self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound)
+
+        return patternsFound
+
+
+    def findPatternsToAnnounce(self, currentPlayer):
+        patterns = []
+        patterns.append({ "name": "Open Three", "tokens": [ "open", "bead", "bead", "bead", "open" ] })
+        patterns.append({ "name": "Open Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "open" ] })
+        patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "open", "bead", "bead", "open" ] })
+        patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "bead", "open", "bead", "open" ] })
+        patterns.append({ "name": "Closed Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "closed" ] })
+        patterns.append({ "name": "Closed Four", "tokens": [ "closed", "bead", "bead", "bead", "bead", "open" ] })
+        patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "open", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "bead", "open", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "bead", "bead", "open", "bead", "not-bead" ] })
+        # TODO: Add the variations for holed 6, 7, 8, and 9 as well
+
+        patternsFound = []
+        for pattern in patterns:
+            self.findPattern(currentPlayer, pattern, patternsFound)
+
+        return patternsFound
+
+
+    def findPattern(self, currentPlayer, pattern, patternsFound):
         for row in range(19):
-            print(str(row % 10)  + "  ", end="")
             for col in range(19):
-                print(str(self.board[row][col]) + "   ", end="")
-            print(" ")
+                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "col": col }, patternsFound)
 
 
-    def generateRandom(self, color, numberOfTurns):
-        for _ in range(numberOfTurns):
-            validSpot = False
-            while validSpot == False:
-                xcord = random.randint(0, 18)
-                ycord = random.randint(0, 18)
-                validSpot = isValidSpot(xcord, ycord, self.board)
-            self.board[ycord][xcord] = color
-            color = controller.switchTurns(color)
+    def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound):
+        directions = []
+        directions.append({ "name": "east", "rowDelta": 0, "colDelta": 1 })
+        directions.append({ "name": "southeast", "rowDelta": 1, "colDelta": 1 })
+        directions.append({ "name": "south", "rowDelta": 1, "colDelta": 0 })
+        directions.append({ "name": "southwest", "rowDelta": 1, "colDelta": -1 })
 
-
-    def generateCreated(self):
-        self.board[1][1] = 'B'
-        self.board[1][2] = "R"
-        self.board[1][3] = "R"
-        self.board[1][4] = "R"
-        self.board[1][5] = "R"
-        return self.board
-
-
-    def isValidSpot(self, xcord, ycord):
-        if self.board[xcord][ycord] == ".":
-            return True
-        return False
-
-
-    def isWinningPatterns(self, color):
-        patternsFound = []
-        five = { "name": "Five - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "nonToken" ] }
-        six = { "name": "Six - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "nonToken" ] }
-        seven = { "name": "Seven - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "token", "nonToken" ] }
-        eight = { "name": "Eight - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "token", "token", "nonToken" ] }
-        nine = { "name": "Nine - Won", "tokens": [ "nonToken", "token", "token", "token", "token", "token", "token", "token", "token", "token", "nonToken" ] }
-        jump = {"name": "jump", "tokens": [ "oposite", "token", "token", "oposite" ]}
-        patterns  = [nine, eight, seven, six, five]
-        for pattern in patterns:
-            isPattern(self.board, color, pattern, patternsFound)
-        return patternsFound
-
-
-    def isCommonPatterns(self, color):
-        patternsFound = []
-        openThree = { "name": "Open Three", "tokens": [ "open", "token", "token", "token", "open" ] }
-        openFour = { "name": "Open Four", "tokens": [ "open", "token", "token", "token", "token", "open" ] }
-        holedOpenFourOne = { "name": "Holed Open Four", "tokens": [ "open", "token", "open", "token", "token", "open" ] }
-        holedOpenFourTwo = { "name": "Holed Open Four", "tokens": [ "open", "token", "token", "open", "token", "open" ] }
-        closedFourOne = { "name": "Closed Four", "tokens": [ "token", "token", "token", "token", "closed", "open" ] }
-        closedFourTwo = { "name": "Closed Four", "tokens": [ "closed", "token", "token", "token", "token", "open" ] }
-        holedFiveOne =  { "name": "Holed Five", "tokens": [ "open", "token", "token", "token", "open", "token" ] }
-        holedFiveTwo = { "name": "Holed Five", "tokens": [ "token", "open", "token", "token", "token", "open" ] }
-        holedFiveThree = { "name": "Holed Five", "tokens": [ "open", "token", "token", "open", "token", "token", "open" ] }
-        patterns = [ openThree, openFour, holedOpenFourOne, holedOpenFourTwo, closedFourOne, closedFourTwo, holedFiveOne, holedFiveTwo, holedFiveThree  ]
-        for pattern in patterns:
-            isPattern(self.board, color, pattern, patternsFound)
-        return patternsFound
-
-
-    def isPattern(self, color, pattern, patternsFound):
-        for row in range(0, 18):
-            for col in range(0, 18):
-                position = {"arow": row, "col": col}
-                isPatternAtPosition(self.board, color, pattern, position, patternsFound)
-
-
-    def isPatternAtPosition(self, color, pattern, position, patternsFound):
-        directions = [ { "name": "East", "rowDelta": 0, "colDelta": 1 }, { "name": "South-East", "rowDelta": 1, "colDelta": 1 }, { "name": "South", "rowDelta": 1, "colDelta": 0 }, { "name": "South-West", "rowDelta": 1, "colDelta": -1 } ]
         for direction in directions:
-            found = isPatternAtPositionInDirection(self.board, color, pattern, position, direction)
-            if found:
-                patternsFound.append({"name": pattern["name"], "direction": direction["name"], "position": position})
-                print(pattern["name"] + " detected. Direction - " + direction["name"] + ". Color - " + color + ". Position - " + str(position["row"]) + ", " + str(position["col"]))
-                if pattern["name"] == "jump":
-                    if color == "R":
-                        redJumps += 1
-                    if color == "B":
-                        blueJumps += 1
-
-                    if redJumps == 5:
-                        print("Red won!")
-                        sys.exit()
-                    if blueJumps == 5:
-                        print("Blue won!")
-                        sys.exit()
-
-                if pattern["name"] == "Five - Won":
-                    print(colr + " won!")
-                    sys.exit()
+            if self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction):
+                patternsFound.append({ "name": pattern["name"], "direction": direction["name"], "position": position })
+                print('Pattern: ' + currentPlayer.color + " " + pattern["name"] + " @ [" + str(position["row"]) + "," + str(position["col"]) + "] in the " + direction["name"] + " direction")
 
 
-    def isPatternAtPositionInDirection(self, color, pattern, position, direction):
-        isBeadAtSpot = False
-        for expectedToken in pattern["tokens"]:
-            isBeadAtSpot = isToken(self.board, color, position, expectedToken)
-            if isBeadAtSpot == True:
-                position = {  "row": (position["row"] + direction["rowDelta"]), "col": (position["col"] + direction["colDelta"])}
-            if isBeadAtSpot == False:
+    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction):
+        for token in pattern["tokens"]:
+            if not self.expectedTokenAtPosition(currentPlayer, position, token):
                 return False
 
+            # Update the position to check for the next expected token
+            position = { "row": (position["row"] + direction["rowDelta"]), "col": (position["col"] + direction["colDelta"])}
+
+        # If we made it this far, all the tokens in the pattern were
+        # found, so the pattern was detected
         return True
 
 
-    def isToken(self, color, position, expectedToken):
+    def expectedTokenAtPosition(self, currentPlayer, position, token):
         row = position["row"]
         col = position["col"]
 
-        if expectedToken == "oposite":
-            if color == "R":
-                oposingToken = "B"
-            if color == "B":
-                oposingToken = "R"
-
-            if self.board[row][col] == oposingToken:
+        # bead
+        #
+        # matches a bead played at the position by the current player
+        if token == "bead":
+            if row > 18 or row < 0 or col > 18 or col < 0:
+                return False
+            if self.board[row][col] == currentPlayer.color[0]:
                 return True
-
-        if expectedToken == "nonToken":
-            if expectedToken == "closed" and (row > 18 or row < 0 or col > 18 or col < 0):
-                return True
-
-            if color == "R":
-                oposingToken = "B"
-            if color == "B":
-                oposingToken = "R"
-
-            if self.board[row][col] == oposingToken and expectedToken == "closed":
-                return True
-
-            if self.board[row][col] == "." and expectedToken == "open":
-                return True
-
-        if expectedToken == "closed" and (row > 18 or row < 0 or col > 18 or col < 0):
-                return True
-
-        if row > 18:
-            return False
-        if row < 0:
-            return False
-        if col > 18:
-            return False
-        if col < 0:
             return False
 
-        if self.board[row][col] == color and expectedToken == "token":
-            return True
+        # opponent
+        #
+        # matches a bead played at the position by an opposing player
+        if token == "opponent":
+            if row > 18 or row < 0 or col > 18 or col < 0:
+                return False
+            if self.board[row][col] != '.' and self.board[row][col] != currentPlayer.color[0]:
+                return True
+            return False
 
-        if color == 0:
-            oposingToken = "B"
-        if color == 1:
-            oposingToken = "R"
+        # open
+        #
+        # matches a position with no bead
+        if token == "open":
+            if row > 18 or row < 0 or col > 18 or col < 0:
+                return False
+            if self.board[row][col] == '.':
+                return True
+            return False
 
-        if self.board[row][col] == oposingToken and expectedToken == "closed":
-            return True
+        # not-bead
+        #
+        # not-bead means will match anything in the position other
+        # than the current player's bead color including:
+        # 1. a position that is off the board
+        # 2. another player's bead
+        # 3. an open position
+        if token == "not-bead":
+            if row > 18 or row < 0 or col > 18 or col < 0:
+                return True
+            if self.board[row][col] != '.' and self.board[row][col] != currentPlayer.color[0]:
+                return True
+            if self.board[row][col] == ".":
+                return True
+            return False
 
-        if self.board[row][col] == "." and expectedToken == "open":
-            return True
+        # closed
+        #
+        # Matches two scenarios:
+        # 1. a position that is off the board
+        # 2. a position occupied by an opposing player's bead
+        if token == "closed":
+            if (row > 18 or row < 0 or col > 18 or col < 0):
+                return True
+            if self.board[row][col] != '.' and self.board[row][col] != currentPlayer.color[0]:
+                return True
+            return False
 
-        return False
+        print('board: we should never get here: token=' + token)
+        sys.exit(1)
+
+
+    def __str__(self):
+        s = "   "
+        for col in range(19):
+            s += str(col  % 10) + "   "
+        s += "\n"
+        for row in range(19):
+            s += str(row % 10)  + "  "
+            for col in range(19):
+                s += str(self.board[row][col]) + "   "
+            s += "\n"
+        return s

@@ -1,4 +1,6 @@
 class Game:
+    beadsPlayed = None
+
     def __init__(self):
         self.beadsPlayed = 0
 
