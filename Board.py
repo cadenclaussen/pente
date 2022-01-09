@@ -67,6 +67,7 @@ class Board:
     def findScorePatterns(self, currentPlayer):
         pass
 
+
     def findPattern(self, currentPlayer, pattern, patternsFound, state):
         for row in range(19):
             for column in range(19):
@@ -92,29 +93,21 @@ class Board:
                 print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["column"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
 
 
-    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, state):
-        patternRightNowToRemove = []
-        patternRightNowToEmphasise = []
+    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, tokenNameForPositionsToFind):
+        positionsFound = []
         for token in pattern["tokens"]:
             if not self.expectedTokenAtPosition(currentPlayer, position, token):
-                patternRightNowToEmphasise = []
-                patternRightNowToRemove = []
                 return False
 
             # Update the position to check for the next expected token
-            if state == token and token == "bead":
-                patternRightNowToEmphasise.append(position)
-            if state == token and token == "opponent":
-                patternRightNowToRemove.append(position)
-                self.beadsToRemove.append(position)
-
+            if token == tokenNameForPositionsToFind:
+                positionsFound.append({ "row": position["row"], "column": position["column"] });
 
             position = { "row": (position["row"] + direction["rowDelta"]), "column": (position["column"] + direction["columnDelta"])}
+
         # If we made it this far, all the tokens in the pattern were
         # found, so the pattern we were searching for was detected
-        for position in patternRightNowToRemove:
-            self.board[position["row"]][position["column"]] = "."
-        return True
+        return positionsFound
 
 
     def expectedTokenAtPosition(self, currentPlayer, position, token):
