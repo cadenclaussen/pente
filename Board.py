@@ -33,9 +33,7 @@ class Board:
     def findJumpPatterns(self, currentPlayer, position):
         patterns = []
         patterns.append({ "name": "Jump", "tokens": [ "bead", "opponent", "opponent", "bead" ]})
-        # TODO: Update this so the jump is checked in all directions, two options:
-        # 1: Change findPatternAtPosition to take an option to determine which direction set to use
-        # 2: Change this code to call findPatternAtPositionInDirection for all 8 directions
+
         patternsFound = []
         for pattern in patterns:
             self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, True, "opponent")
@@ -68,13 +66,13 @@ class Board:
         pass
 
 
-    def findPattern(self, currentPlayer, pattern, patternsFound, state):
+    def findPattern(self, currentPlayer, pattern, patternsFound, tokenNameToSavePositionFor):
         for row in range(19):
             for column in range(19):
-                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, patternsFound, False, state)
+                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, patternsFound, False, tokenNameToSavePositionFor)
 
 
-    def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full, state):
+    def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full, tokenNameToSavePositionFor):
         directions = []
         directions.append({ "name": "east", "rowDelta": 0, "columnDelta": 1 })
         directions.append({ "name": "southeast", "rowDelta": 1, "columnDelta": 1 })
@@ -83,31 +81,30 @@ class Board:
 
         if (full):
             directions.append({ "name": "west", "rowDelta": 0, "columnDelta": -1 })
-            directions.append({ "name": "northwest", "rowDelta": -1, "columnDelta": 1 })
-            directions.append({ "name": "north", "rowDelta": 0, "columnDelta": 1 })
+            directions.append({ "name": "northwest", "rowDelta": -1, "columnDelta": -1 })
+            directions.append({ "name": "north", "rowDelta": -1, "columnDelta": 0 })
             directions.append({ "name": "northeast", "rowDelta": -1, "columnDelta": 1 })
 
         for direction in directions:
-            if self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction, state):
-                patternsFound.append({ "name": pattern["name"], "direction": direction["name"], "position": position })
+            isPatternFound, positionsFound = self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction, tokenNameToSavePositionFor)
+            if isPatternFound:
+                patternsFound.append({ "pattern": { "name": pattern["name"], "direction": direction["name"], "position": position }, "positions": positionsFound })
                 print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["column"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
 
 
-    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, tokenNameForPositionsToFind):
+    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, tokenNameToSavePositionFor):
         positionsFound = []
         for token in pattern["tokens"]:
             if not self.expectedTokenAtPosition(currentPlayer, position, token):
-                return False
+                return False, []
 
-            # Update the position to check for the next expected token
-            if token == tokenNameForPositionsToFind:
-                positionsFound.append({ "row": position["row"], "column": position["column"] });
+            if token == tokenNameToSavePositionFor:
+                positionsFound.append({ "row": position["row"], "column": position["column"] })
 
             position = { "row": (position["row"] + direction["rowDelta"]), "column": (position["column"] + direction["columnDelta"])}
 
         # If we made it this far, all the tokens in the pattern were
-        # found, so the pattern we were searching for was detected
-        return positionsFound
+        return True, positionsFound
 
 
     def expectedTokenAtPosition(self, currentPlayer, position, token):

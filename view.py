@@ -126,7 +126,8 @@ def playBead(e):
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
-    game, board, players, currentPlayer = controller.playBead({ "row": row, "column": column });
+    game, board, players, currentPlayer = controller.playBead({ "row": row, "column": column })
+    print(str(board.beadsToRemove) + " GABU GABu")
     if (board.beadsToRemove != []):
         for position in board.beadsToRemove:
             row = position["row"]
@@ -137,6 +138,7 @@ def playBead(e):
             label.bind("<Enter>", enter)
             label.bind("<Leave>", leave)
             label.bind("<Button-1>", playBead)
+    board.beadsToRemove = []
 
 
     if (game.isWinner()):

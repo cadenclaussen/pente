@@ -21,6 +21,39 @@ def main():
     print(board)
 
 
+def testWinning():
+    board = Board()
+    player1 = Player("Shane", "Blue", 0)
+    currentPlayer = player1
+    generateFive(board)
+    winningPatterns = board.findWinningPatterns(currentPlayer, { "row": 9, "column": 9 })
+    print(winningPatterns)
+    print(board)
+
+
+def testJumps():
+    board = Board()
+    player1 = Player("Shane", "Blue", 0)
+    currentPlayer = player1
+    generateJumps(board)
+    jumps =  board.findJumpPatterns(currentPlayer, { "row": 9, "column": 9 })
+    print(jumps)
+    print(board)
+
+
+def generateJumps(board):
+    __createJump(board, 9, 9, 0, 1)
+    __createJump(board, 9, 9, 1, 0)
+    return board
+
+
+def __createJump(board, row, column, rowOffset, columnOffset):
+    board.board[row][column] = 'B'
+    board.board[row + rowOffset][column + columnOffset] = 'R'
+    board.board[row + (2 * rowOffset)][column + (2 * columnOffset)] = 'R'
+    board.board[row + (3 * rowOffset)][column + (3 * columnOffset)] = 'B'
+
+
 def generateRandomBoard(board, players, numberOfTurns):
     currentPlayer = players[0]
     for _ in range(numberOfTurns):
@@ -44,4 +77,4 @@ def generateCreatedBoard(board):
     board.board[1][5] = "R"
 
 
-main()
+testJumps()
