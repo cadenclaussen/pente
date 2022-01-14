@@ -1,3 +1,5 @@
+# points
+# highlight announces
 import random
 from Player import Player
 from Game import Game
