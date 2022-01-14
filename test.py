@@ -49,7 +49,7 @@ def testJumps():
     currentPlayer = player1
     generateJumps(board)
     jumps = board.findJumpPatterns(currentPlayer, { "row": 9, "column": 9 })
-    
+
     for i in range(2):
         for j in range(8):
             print(str(jumps[0][j]["positions"][i]))

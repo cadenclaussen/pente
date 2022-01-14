@@ -52,7 +52,8 @@ class Board:
 
     def findPatternsToAnnounce(self, currentPlayer):
         patterns = []
-        patterns.append({ "name": "Open Three", "tokens": [ "open", "bead", "bead", "bead", "open" ] })
+        
+        patterns.append({ "name": "Open Three", "tokens": [ "not-bead", "open", "bead", "bead", "bead", "open", "not-bead" ] })
         patterns.append({ "name": "Open Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "open" ] })
         patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "open", "bead", "bead", "open" ] })
         patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "bead", "open", "bead", "open" ] })

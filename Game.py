@@ -6,6 +6,4 @@ class Game:
 
     # This is temporary just to test out the view
     def isWinner(self):
-        if self.beadsPlayed == 20:
-            self.winner = True
         return self.winner

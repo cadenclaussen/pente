@@ -30,11 +30,6 @@ def playBead(position):
     print("Finding winning patterns")
     print(currentPlayer)
     winningPatterns = board.findWinningPatterns(currentPlayer)
-    if winningPatterns != []:
-        game.winner = True
-
-    if currentPlayer.jumps >= 5:
-        game.winner = True
 
     # TODO: Update game/players if jump patterns found
     # TODO: If jumps exist, remove opponent beads
@@ -43,12 +38,20 @@ def playBead(position):
     jumps, positionsFound = board.findJumpPatterns(currentPlayer, position)
 
     if jumps != []:
-        currentPlayer.jumps += len(jumps)
+        currentPlayer.jumps += 1
         if jumps[len(jumps) - 1]["pattern"]["name"] == "Jump":
             board.removeFromBoard(jumps[0]["positions"][1])
             board.removeFromBoard(jumps[0]["positions"][0])
+
         positionsFound = jumps[0]["positions"]
 
+    if winningPatterns != []:
+        game.winner = True
+
+    if currentPlayer.jumps >= 5:
+        game.winner = True
+
+    print(str(currentPlayer.jumps), "jumps")
     # TODO: Process announce patterns
     print("Finding announce patterns")
     board.findPatternsToAnnounce(currentPlayer)
