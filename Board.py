@@ -11,9 +11,13 @@ class Board:
 
 
     def removeFromBoard(self, position):
-        self.board[position["row"]][position["column"]] = "."
-        print(self.board[position["row"]][position["column"]])
-        return self.board
+        print("position")
+        print(position)
+        print(str(position["row"]))
+        # print(position["column"])
+        # self.board[[position]["row"]][[position]["column"]] = "."
+
+
 
     def playBead(self, currentPlayer, position):
         self.board[position["column"]][position["row"]] = currentPlayer.color[0]
@@ -165,14 +169,10 @@ class Board:
         if token == "not-bead":
             if row > 18 or row < 0 or column > 18 or column < 0:
                 return True
-
-                print("funny")
             if self.board[column][row] != '.' and self.board[column][row] != currentPlayer.color[0]:
                 return True
-                print("funny")
             if self.board[column][row] == ".":
                 return True
-                print("funny")
             return False
 
         # closed

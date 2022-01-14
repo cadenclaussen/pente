@@ -53,6 +53,15 @@ def testJumps():
     print("")
     for i in range(8):
         print(str(jumps[0][i]["pattern"]["direction"]), str(jumps[0][i]["positions"][0]), str(jumps[0][i]["positions"][1]))
+    print('Removing jumps')
+    for i in range(2):
+        print(str(jumps[0][0]["positions"][i - 1]))
+
+    for i in range(2):
+        for j in range(8):
+            print(str(jumps[0][j]["positions"][i]))
+            board.removeFromBoard(str(jumps[0][j]["positions"][i]))
+
     if jumps != []:
         currentPlayer.jumps += len(jumps)
     if currentPlayer.jumps >= 5:
