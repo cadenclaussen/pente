@@ -10,6 +10,12 @@ class Board:
                 self.board[row].append(".")
 
 
+    def removeFromBoard(self, position):
+        self.board[position["row"]][position["column"]] = "."
+        print(self.board[position["row"]][position["column"]])
+        print("position")
+        return self.board
+
     def playBead(self, currentPlayer, position):
         self.board[position["column"]][position["row"]] = currentPlayer.color[0]
 
@@ -23,9 +29,13 @@ class Board:
         patterns.append({ "name": "Nine", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
 
         patternsFound = []
+        print(self.findPattern(currentPlayer, { "name": "Five", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] }, patternsFound, "bead"))
         for pattern in patterns:
-            self.findPattern(currentPlayer, pattern, patternsFound, "bead")
-
+            justFound = self.findPattern(currentPlayer, pattern, patternsFound, "bead")
+            print(justFound)
+            print("justFound")
+            if justFound != []:
+                patternsFound.append(justFound)
         return patternsFound
 
 
@@ -36,9 +46,10 @@ class Board:
 
         patternsFound = []
         for pattern in patterns:
-            self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, True, "opponent")
+            positionsFound = self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, True, "opponent")
 
-        return patternsFound
+        print(patternsFound, positionsFound)
+        return patternsFound, positionsFound
 
 
     def findPatternsToAnnounce(self, currentPlayer):
@@ -56,7 +67,7 @@ class Board:
 
         patternsFound = []
         for pattern in patterns:
-            self.findPattern(currentPlayer, pattern, patternsFound, "bead")
+            return self.findPattern(currentPlayer, pattern, patternsFound, "bead")
 
         return patternsFound
 
@@ -68,8 +79,14 @@ class Board:
 
     def findPattern(self, currentPlayer, pattern, patternsFound, tokenNameToSavePositionFor):
         for row in range(19):
+            print(row)
             for column in range(19):
-                self.findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, patternsFound, False, tokenNameToSavePositionFor)
+                print(row)
+                print(column)
+                position = { "row": row, "column": column }
+                print("position")
+                print(position)
+                return self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, False, tokenNameToSavePositionFor)
 
 
     def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full, tokenNameToSavePositionFor):
@@ -84,17 +101,20 @@ class Board:
             directions.append({ "name": "northwest", "rowDelta": -1, "columnDelta": -1 })
             directions.append({ "name": "north", "rowDelta": -1, "columnDelta": 0 })
             directions.append({ "name": "northeast", "rowDelta": -1, "columnDelta": 1 })
-
         for direction in directions:
             isPatternFound, positionsFound = self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction, tokenNameToSavePositionFor)
+            print(isPatternFound, positionsFound)
             if isPatternFound:
                 patternsFound.append({ "pattern": { "name": pattern["name"], "direction": direction["name"], "position": position }, "positions": positionsFound })
                 print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["column"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
-
+                print(positionsFound)
+        return positionsFound
 
     def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, tokenNameToSavePositionFor):
         positionsFound = []
         for token in pattern["tokens"]:
+            print(position, token)
+            print(self.expectedTokenAtPosition(currentPlayer, position, token))
             if not self.expectedTokenAtPosition(currentPlayer, position, token):
                 return False, []
 
@@ -151,10 +171,14 @@ class Board:
         if token == "not-bead":
             if row > 18 or row < 0 or column > 18 or column < 0:
                 return True
+
+                print("funny")
             if self.board[column][row] != '.' and self.board[column][row] != currentPlayer.color[0]:
                 return True
+                print("funny")
             if self.board[column][row] == ".":
                 return True
+                print("funny")
             return False
 
         # closed

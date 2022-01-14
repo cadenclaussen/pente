@@ -126,10 +126,13 @@ def playBead(e):
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
-    game, board, players, currentPlayer = controller.playBead({ "row": row, "column": column })
-    print(str(board.beadsToRemove) + " GABU GABu")
-    if (board.beadsToRemove != []):
-        for position in board.beadsToRemove:
+
+    game, board, players, currentPlayer, beadsToRemove = controller.playBead({ "row": row, "column": column })
+    print(beadsToRemove)
+    if beadsToRemove != []:
+        print("DDDDDD")
+        for position in beadsToRemove:
+            print(position)
             row = position["row"]
             column = position["column"]
             image = getImage(row, column)
