@@ -13,47 +13,72 @@ boardLabelFrame = None
 def main():
     global boardLabelFrame, game, board, players, currentPlayer
 
+
+    # Create the whole root window that the game will be in
+    # - set the title of the window
+    # - set the size of the window
     root = Tk()
     root.title("Pente")
-    root.geometry("760x760")
+    root.geometry("900x900")
 
-    windowFrame = LabelFrame(root, padx=1, pady=1, bg="grey")
-    windowFrame.pack()
 
-    headerLabelFrame = LabelFrame(windowFrame, padx=10, pady=10)
-    headerLabelFrame.grid(row=0, column=0, columnspan=2, sticky=W+E)
-    label = Label(headerLabelFrame, text="Header Frame")
-    label.pack()
+    # Create a LabelFrame as a child of the root window.
+    # This will be the main frame for everything in the user interface.
+    window = LabelFrame(root, padx=1, pady=1, bg="grey").pack()
 
-    # Create the players pane
-    playersLabelFrame = LabelFrame(windowFrame, padx=10, pady=10, width=30)
-    playersLabelFrame.grid(row=1, column=0, sticky=N+S)
-    label = Label(playersLabelFrame, text="Players Frame")
-    label.pack()
 
-    # Create the players pane
-    boardLabelFrame = LabelFrame(windowFrame, padx=20, pady=20)
-    boardLabelFrame.grid(row=1, column=1)
 
-    # Create the footer pane
-    footer = LabelFrame(windowFrame, padx=20, pady=20)
-    footer.grid(row=2, column=0, columnspan=2, sticky=W+E)
-    label = Label(footer, text="Footer Frame")
-    label.pack()
+    # Create a LabelFrame named header that will span the entire top of the user experience
+    # - On row 1, spans all 3 columns
+    header = LabelFrame(window, padx=10, pady=10, text="header").grid(row=0, column=0, rowspan=2, columnspan=3, sticky=W+E)
+    # header1 = LabelFrame(header, padx=10, pady=10).grid(row=0, column=0)
+    # header2 = LabelFrame(header, padx=10, pady=10).grid(row=1, column=0)
+    label = Label(header, text="Pente v0.1").pack()
+    label = Label(header, text="by Caden Claussen and Shane Claussen").pack()
 
-    # Add all the 19x19 images to the board pane to initialize the board
-    # - For each spot on the board, bind enter, leave, and playBead functions
-    # - Upper left is [0, 0], bottom right is [18, 18], middle is [9, 9]
-    for row in range(19):
-        for column in range(19):
-            image = getImage(row, column)
-            label = Label(boardLabelFrame, image=image, width=27, height=27, padx=0, pady=0)
-            label.grid(row=row, column=column, padx=0, pady=0)
-            label.bind("<Enter>", enter)
-            label.bind("<Leave>", leave)
-            label.bind("<Button-1>", playBead)
 
-    newGame()
+
+    # # Create a LabelFrame named left on the left hand side of the playing board
+    # # - On row 2, column 1
+    # left = LabelFrame(window, padx=10, pady=10, width=30).grid(row=1, column=0, sticky=N+S)
+    # label = Label(left, text="Left Frame").pack()
+
+
+
+    # # Create a LabelFrame named board between the left and right label frames
+    # # - On row 2, column 2
+    # boardLabelFrame = LabelFrame(window, padx=20, pady=20)
+    # boardLabelFrame.grid(row=2, column=1)
+
+    # # Create a LabelFrame named right on the right hand side of the playing board on the 2nd row of the main window
+    # # - On row 2, column 3
+    # right = LabelFrame(window, padx=10, pady=10, width=30)
+    # right.grid(row=2, column=2, sticky=N+S)
+    # label = Label(right, text="Right Frame")
+    # label.pack()
+
+
+    # # Create a LabelFrame named footer below the board
+    # # - On row 3, spans all 3 columns
+    # footer = LabelFrame(window, padx=20, pady=20)
+    # footer.grid(row=3, column=0, columnspan=3, sticky=W+E)
+    # label = Label(footer, text="Footer Frame")
+    # label.pack()
+
+
+    # # Add all the 19x19 images to the board pane to initialize the board
+    # # - For each spot on the board, bind enter, leave, and playBead functions
+    # # - Upper left is [0, 0], bottom right is [18, 18], middle is [9, 9]
+    # for row in range(19):
+    #     for column in range(19):
+    #         image = getImage(row, column)
+    #         label = Label(boardLabelFrame, image=image, width=27, height=27, padx=0, pady=0)
+    #         label.grid(row=row, column=column, padx=0, pady=0)
+    #         label.bind("<Enter>", enter)
+    #         label.bind("<Leave>", leave)
+    #         label.bind("<Button-1>", playBead)
+
+    # newGame()
 
 
     root.mainloop()
