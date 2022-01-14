@@ -28,11 +28,8 @@ class Board:
         patterns.append({ "name": "Nine", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
 
         patternsFound = []
-        print(self.findPattern(currentPlayer, { "name": "Five", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] }, patternsFound, "bead"))
         for pattern in patterns:
             justFound = self.findPattern(currentPlayer, pattern, patternsFound, "bead")
-            print(justFound)
-            print("justFound")
             if justFound != []:
                 patternsFound.append(justFound)
         return patternsFound
@@ -52,17 +49,17 @@ class Board:
 
     def findPatternsToAnnounce(self, currentPlayer):
         patterns = []
-        
+
         patterns.append({ "name": "Open Three", "tokens": [ "not-bead", "open", "bead", "bead", "bead", "open", "not-bead" ] })
-        patterns.append({ "name": "Open Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "open" ] })
         patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "open", "bead", "bead", "open" ] })
         patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "bead", "open", "bead", "open" ] })
         patterns.append({ "name": "Closed Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "closed" ] })
         patterns.append({ "name": "Closed Four", "tokens": [ "closed", "bead", "bead", "bead", "bead", "open" ] })
+        patterns.append({ "name": "Open Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "open" ] })
         patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "open", "bead", "bead", "bead", "not-bead" ] })
         patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "bead", "open", "bead", "bead", "not-bead" ] })
         patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "bead", "bead", "open", "bead", "not-bead" ] })
-        # TODO: Add the variations for holed 6, 7, 8, and 9 as well
+
 
         patternsFound = []
         for pattern in patterns:
@@ -75,7 +72,20 @@ class Board:
 
     # TODO: Implement
     def findScorePatterns(self, currentPlayer):
-        pass
+        patterns = []
+
+        patterns.append({ "name": "Closed Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "closed" ] })
+        patterns.append({ "name": "Closed Four", "tokens": [ "closed", "bead", "bead", "bead", "bead", "open" ] })
+        patterns.append({ "name": "Open Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "open" ] })
+
+
+        patternsFound = []
+        for pattern in patterns:
+            answer = self.findPattern(currentPlayer, pattern, patternsFound, "bead")
+            if patternsFound != []:
+                patternsFound.append(answer)
+                
+        return patternsFound
 
 
     def findPattern(self, currentPlayer, pattern, patternsFound, tokenNameToSavePositionFor):

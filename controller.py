@@ -28,52 +28,59 @@ def playBead(position):
 
     # TODO: Update game/players if winning patterns found
     print("Finding winning patterns")
-    print(currentPlayer)
     winningPatterns = board.findWinningPatterns(currentPlayer)
 
     # TODO: Update game/players if jump patterns found
     # TODO: If jumps exist, remove opponent beads
 
-    print("Finding Jump patterns", position, currentPlayer)
+    print("Finding Jump patterns")
     jumps, positionsFound = board.findJumpPatterns(currentPlayer, position)
 
     if jumps != []:
         currentPlayer.jumps += 1
-        if jumps[len(jumps) - 1]["pattern"]["name"] == "Jump":
+        currentPlayer.score += 1
+        if jumps[0]["pattern"]["name"] == "Jump":
             board.removeFromBoard(jumps[0]["positions"][1])
             board.removeFromBoard(jumps[0]["positions"][0])
 
         positionsFound = jumps[0]["positions"]
 
     if winningPatterns != []:
+        currentPlayer.score += 5
         game.winner = True
 
     if currentPlayer.jumps >= 5:
         game.winner = True
 
-    print(str(currentPlayer.jumps), "jumps")
     # TODO: Process announce patterns
+
     print("Finding announce patterns")
     board.findPatternsToAnnounce(currentPlayer)
 
     # TODO: Update game/player with scores
+    print("Finding score patterns")
     scorePatterns = board.findScorePatterns(currentPlayer)
+    if scorePatterns != []: 
+        currentPlayer.score += len(scorePatterns) - 1
+
 
     print(board)
-    print(str(currentPlayer) + " played at " + str(position["column"]) + ", " + str(position["row"]));
+    print(str(currentPlayer) + " played at " + str(position["column"]) + ", " + str(position["row"]))
 
-
+    print(currentPlayer, ": ")
+    print(str(currentPlayer.jumps), " jumps")
+    print(str(currentPlayer.score), " score")
 
     __nextPlayer()
 
-    # TODO: Process announce patterns
-    board.findPatternsToAnnounce(currentPlayer)
+    print(currentPlayer, ": ")
+    print(str(currentPlayer.jumps), " jumps")
+    print(str(currentPlayer.score), " score")
 
-    # TODO: Update game/player with scores
-    scorePatterns = board.findScorePatterns(currentPlayer)
+    __nextPlayer()
+    __nextPlayer()
 
     print(str(currentPlayer) + " turn...")
-    print(positionsFound)
     return game, board, players, currentPlayer, positionsFound
 
 

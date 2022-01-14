@@ -128,11 +128,8 @@ def playBead(e):
 
 
     game, board, players, currentPlayer, beadsToRemove = controller.playBead({ "row": row, "column": column })
-    print(beadsToRemove)
     if beadsToRemove != []:
-        print("DDDDDD")
         for position in beadsToRemove:
-            print(position)
             row = position["row"]
             column = position["column"]
             image = getImage(row, column)
