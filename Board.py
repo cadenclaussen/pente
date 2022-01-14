@@ -11,11 +11,7 @@ class Board:
 
 
     def removeFromBoard(self, position):
-        print("position")
-        print(position)
-        print(str(position["row"]))
-        # print(position["column"])
-        # self.board[[position]["row"]][[position]["column"]] = "."
+        self.board[position["column"]][position["row"]] = "."
 
 
 
@@ -84,7 +80,7 @@ class Board:
     def findPattern(self, currentPlayer, pattern, patternsFound, tokenNameToSavePositionFor):
         for row in range(19):
             for col in range(19):
-                position = { "row": row, "column": column }
+                position = { "row": row, "column": col }
                 answer = self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, False, tokenNameToSavePositionFor)
                 if answer != []:
                     patternsFound.append(answer)
