@@ -50,6 +50,9 @@ def testJumps():
     generateJumps(board)
     jumps = board.findJumpPatterns(currentPlayer, { "row": 9, "column": 9 })
     print(jumps)
+    print("")
+    for i in range(8):
+        print(str(jumps[0][i]["pattern"]["direction"]), str(jumps[0][i]["positions"][0]), str(jumps[0][i]["positions"][1]))
     if jumps != []:
         currentPlayer.jumps += len(jumps)
     if currentPlayer.jumps >= 5:
@@ -61,6 +64,12 @@ def testJumps():
 def generateJumps(board):
     __createJump(board, 9, 9, 0, 1)
     __createJump(board, 9, 9, 1, 0)
+    __createJump(board, 9, 9, 1, 1)
+    __createJump(board, 9, 9, -1, 0)
+    __createJump(board, 9, 9, -1, 1)
+    __createJump(board, 9, 9, 1, -1)
+    __createJump(board, 9, 9, 0, -1)
+    __createJump(board, 9, 9, -1, -1)
     return board
 
 
@@ -94,4 +103,4 @@ def generateCreatedBoard(board):
     board.board[1][5] = "R"
 
 
-main()
+testJumps()

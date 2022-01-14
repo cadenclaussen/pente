@@ -13,7 +13,6 @@ class Board:
     def removeFromBoard(self, position):
         self.board[position["row"]][position["column"]] = "."
         print(self.board[position["row"]][position["column"]])
-        print("position")
         return self.board
 
     def playBead(self, currentPlayer, position):
@@ -48,7 +47,6 @@ class Board:
         for pattern in patterns:
             positionsFound = self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, True, "opponent")
 
-        print(patternsFound, positionsFound)
         return patternsFound, positionsFound
 
 
@@ -67,8 +65,10 @@ class Board:
 
         patternsFound = []
         for pattern in patterns:
-            return self.findPattern(currentPlayer, pattern, patternsFound, "bead")
-
+            answer = self.findPattern(currentPlayer, pattern, patternsFound, "bead")
+            if patternsFound != []:
+                patternsFound.append(answer)
+                
         return patternsFound
 
 
@@ -79,15 +79,12 @@ class Board:
 
     def findPattern(self, currentPlayer, pattern, patternsFound, tokenNameToSavePositionFor):
         for row in range(19):
-            print(row)
-            for column in range(19):
-                print(row)
-                print(column)
+            for col in range(19):
                 position = { "row": row, "column": column }
-                print("position")
-                print(position)
-                return self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, False, tokenNameToSavePositionFor)
-
+                answer = self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, False, tokenNameToSavePositionFor)
+                if answer != []:
+                    patternsFound.append(answer)
+        return patternsFound
 
     def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full, tokenNameToSavePositionFor):
         directions = []
@@ -103,18 +100,15 @@ class Board:
             directions.append({ "name": "northeast", "rowDelta": -1, "columnDelta": 1 })
         for direction in directions:
             isPatternFound, positionsFound = self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction, tokenNameToSavePositionFor)
-            print(isPatternFound, positionsFound)
+
             if isPatternFound:
                 patternsFound.append({ "pattern": { "name": pattern["name"], "direction": direction["name"], "position": position }, "positions": positionsFound })
                 print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["column"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
-                print(positionsFound)
         return positionsFound
 
     def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, tokenNameToSavePositionFor):
         positionsFound = []
         for token in pattern["tokens"]:
-            print(position, token)
-            print(self.expectedTokenAtPosition(currentPlayer, position, token))
             if not self.expectedTokenAtPosition(currentPlayer, position, token):
                 return False, []
 
@@ -195,6 +189,21 @@ class Board:
 
         print('board: we should never get here: token=' + token)
         sys.exit(1)
+
+
+    def printBoard(self, board):
+        self.board = board
+        s = "   "
+        for column in range(19):
+            s += str(column  % 10) + "  "
+        s += "\n"
+        for row in range(19):
+            s += str(row % 10)  + "  "
+            for column in range(19):
+                s += str(self.board[column][row]) + "  "
+            s += "\n"
+        return s
+
 
 
     def __str__(self):
