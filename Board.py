@@ -1,9 +1,23 @@
 import sys
 
+
 class Board:
+    East = { "name": "east", "rowOffset": 0, "columnOffset": 1 }
+    Southeast = { "name": "southeast", "rowOffset": 1, "columnOffset": 1 }
+    South = { "name": "south", "rowOffset": 1, "columnOffset": 0 }
+    Southwest = { "name": "southwest", "rowOffset": 1, "columnOffset": -1 }
+    West = { "name": "west", "rowOffset": 0, "columnOffset": -1 }
+    Northwest = { "name": "northwest", "rowOffset": -1, "columnOffset": -1 }
+    North = { "name": "north", "rowOffset": -1, "columnOffset": 0 }
+    Northeast = { "name": "northeast", "rowOffset": -1, "columnOffset": 1 }
+
+
     def __init__(self):
+        self.jumpPatterns = []
+        self.winningPatterns = []
+        self.announcePatterns = { 'Shane': [], 'Caden': [] }
+        self.pointPatterns = { 'Shane': [], 'Caden': [] }
         self.board = []
-        self.beadsToRemove = []
         for row in range(19):
             self.board.append([])
             for column in range(19):
@@ -14,12 +28,34 @@ class Board:
         self.board[position["column"]][position["row"]] = "."
 
 
-
     def playBead(self, currentPlayer, position):
         self.board[position["column"]][position["row"]] = currentPlayer.color[0]
 
 
+    # TODO: If there are three players this needs to be updated so the two opponent beads are the same bead
+    def findJumpPatterns(self, currentPlayer, position):
+        self.jumpPatterns = []
+
+        patterns = []
+        patterns.append({ "name": "Jump", "tokens": [ "bead", "opponent", "opponent", "bead" ]})
+
+        cumulativePatternsFound = []
+        for pattern in patterns:
+            patternsFound = self.__findPatternAtPosition(currentPlayer, patterns[0], position, [ Board.East, Board.Southeast, Board.South, Board.Southwest, Board.West, Board.Northwest, Board.North, Board.Northeast ], "opponent")
+            if patternsFound:
+                cumulativePatternsFound += patternsFound
+
+        self.jumpPatterns = cumulativePatternsFound
+        for jumpPattern in self.jumpPatterns:
+            for position in jumpPattern["positions"]:
+                self.removeFromBoard(position)
+
+        return self.jumpPatterns != []
+
+
     def findWinningPatterns(self, currentPlayer):
+        self.winningPatterns = []
+
         patterns = []
         patterns.append({ "name": "Five", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
         patterns.append({ "name": "Six", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
@@ -27,29 +63,20 @@ class Board:
         patterns.append({ "name": "Eight", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
         patterns.append({ "name": "Nine", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
 
-        patternsFound = []
+        cumulativePatternsFound = []
         for pattern in patterns:
-            justFound = self.findPattern(currentPlayer, pattern, patternsFound, "bead")
-            if justFound != []:
-                patternsFound.append(justFound)
-        return patternsFound
+            patternsFound = self.__findPattern(currentPlayer, pattern, "bead")
+            if patternsFound:
+                cumulativePatternsFound += patternsFound
+
+        self.winningPatterns = cumulativePatternsFound
+        return self.winningPatterns != []
 
 
-    # TODO: If there are three players this needs to be updated so the two opponent beads are the same bead
-    def findJumpPatterns(self, currentPlayer, position):
+    def findAnnouncePatterns(self, currentPlayer):
+        self.announcePatterns[currentPlayer.name] = []
+
         patterns = []
-        patterns.append({ "name": "Jump", "tokens": [ "bead", "opponent", "opponent", "bead" ]})
-
-        patternsFound = []
-        for pattern in patterns:
-            positionsFound = self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, True, "opponent")
-
-        return patternsFound, positionsFound
-
-
-    def findPatternsToAnnounce(self, currentPlayer):
-        patterns = []
-
         patterns.append({ "name": "Open Three", "tokens": [ "not-bead", "open", "bead", "bead", "bead", "open", "not-bead" ] })
         patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "open", "bead", "bead", "open" ] })
         patterns.append({ "name": "Holed Open Four", "tokens": [ "open", "bead", "bead", "open", "bead", "open" ] })
@@ -60,76 +87,81 @@ class Board:
         patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "bead", "open", "bead", "bead", "not-bead" ] })
         patterns.append({ "name": "Holed Five", "tokens": [ "not-bead", "bead", "bead", "bead", "open", "bead", "not-bead" ] })
 
-
-        patternsFound = []
+        cumulativePatternsFound = []
         for pattern in patterns:
-            answer = self.findPattern(currentPlayer, pattern, patternsFound, "bead")
-            if patternsFound != []:
-                patternsFound.append(answer)
-                
-        return patternsFound
+            patternsFound = self.__findPattern(currentPlayer, pattern, "bead")
+            if patternsFound:
+                cumulativePatternsFound += patternsFound
+
+        self.announcePatterns[currentPlayer.name] = cumulativePatternsFound
+        return self.announcePatterns[currentPlayer.name] != []
 
 
-    # TODO: Implement
-    def findScorePatterns(self, currentPlayer):
+    # TODO: Include all the winning pattern variants as well
+    def findPointPatterns(self, currentPlayer):
+        self.pointPatterns[currentPlayer.name] = []
+
         patterns = []
+        patterns.append({ "name": "Four", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Five", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Six", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Seven", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Eight", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
+        patterns.append({ "name": "Nine", "tokens": [ "not-bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "bead", "not-bead" ] })
 
-        patterns.append({ "name": "Closed Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "closed" ] })
-        patterns.append({ "name": "Closed Four", "tokens": [ "closed", "bead", "bead", "bead", "bead", "open" ] })
-        patterns.append({ "name": "Open Four", "tokens": [ "open", "bead", "bead", "bead", "bead", "open" ] })
-
-
-        patternsFound = []
+        cumulativePatternsFound = []
         for pattern in patterns:
-            answer = self.findPattern(currentPlayer, pattern, patternsFound, "bead")
-            if patternsFound != []:
-                patternsFound.append(answer)
-                
-        return patternsFound
+            patternsFound = self.__findPattern(currentPlayer, pattern, "bead")
+            if patternsFound:
+                cumulativePatternsFound += patternsFound
+
+        self.pointPatterns[currentPlayer.name] = cumulativePatternsFound
+
+        return self.pointPatterns[currentPlayer.name] != []
 
 
-    def findPattern(self, currentPlayer, pattern, patternsFound, tokenNameToSavePositionFor):
-        for row in range(19):
-            for col in range(19):
-                position = { "row": row, "column": col }
-                answer = self.findPatternAtPosition(currentPlayer, pattern, position, patternsFound, False, tokenNameToSavePositionFor)
-                if answer != []:
-                    patternsFound.append(answer)
-        return patternsFound
+    def __findPattern(self, currentPlayer, pattern, tokenNameToSavePositionFor):
+        cumulativePatternsFound = None
+        for row in range(-1, 20):
+            for column in range(-1, 20):
+                patternsFound = self.__findPatternAtPosition(currentPlayer, pattern, { "row": row, "column": column }, [ Board.East, Board.Southeast, Board.South, Board.Southwest ], tokenNameToSavePositionFor)
+                if patternsFound:
+                    if cumulativePatternsFound is None:
+                        cumulativePatternsFound = []
+                    cumulativePatternsFound += patternsFound
+        return cumulativePatternsFound
 
-    def findPatternAtPosition(self, currentPlayer, pattern, position, patternsFound, full, tokenNameToSavePositionFor):
-        directions = []
-        directions.append({ "name": "east", "rowDelta": 0, "columnDelta": 1 })
-        directions.append({ "name": "southeast", "rowDelta": 1, "columnDelta": 1 })
-        directions.append({ "name": "south", "rowDelta": 1, "columnDelta": 0 })
-        directions.append({ "name": "southwest", "rowDelta": 1, "columnDelta": -1 })
 
-        if (full):
-            directions.append({ "name": "west", "rowDelta": 0, "columnDelta": -1 })
-            directions.append({ "name": "northwest", "rowDelta": -1, "columnDelta": -1 })
-            directions.append({ "name": "north", "rowDelta": -1, "columnDelta": 0 })
-            directions.append({ "name": "northeast", "rowDelta": -1, "columnDelta": 1 })
+    def __findPatternAtPosition(self, currentPlayer, pattern, position, directions, tokenNameToSavePositionFor):
+        patternsFound = None
         for direction in directions:
-            isPatternFound, positionsFound = self.findPatternAtPositionInDirection(currentPlayer, pattern, position, direction, tokenNameToSavePositionFor)
+            positionsFound = self.__findPatternAtPositionInDirection(currentPlayer, pattern, position, direction, tokenNameToSavePositionFor)
+            if positionsFound:
+                if patternsFound is None:
+                    patternsFound = []
+                patternsFound += [ { "name": pattern["name"], "direction": direction["name"], "positions": positionsFound } ]
 
-            if isPatternFound:
-                patternsFound.append({ "pattern": { "name": pattern["name"], "direction": direction["name"], "position": position }, "positions": positionsFound })
-                print('Pattern: ' + str(currentPlayer) + " " + pattern["name"] + " @ [" + str(position["column"]) + "," + str(position["row"]) + "] in the " + direction["name"] + " direction")
-        return positionsFound
+        return patternsFound
 
-    def findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, tokenNameToSavePositionFor):
+
+    # Returns:
+    # - None if the pattern did not match in the direction
+    # - An array of matched positions if the pattern was detected
+    #   Note: If there are no detected positions but the patterns was found, then [] is returned
+    def __findPatternAtPositionInDirection(self, currentPlayer, pattern, position, direction, tokenNameToSavePositionFor):
         positionsFound = []
         for token in pattern["tokens"]:
             if not self.expectedTokenAtPosition(currentPlayer, position, token):
-                return False, []
+                return None
 
             if token == tokenNameToSavePositionFor:
                 positionsFound.append({ "row": position["row"], "column": position["column"] })
 
-            position = { "row": (position["row"] + direction["rowDelta"]), "column": (position["column"] + direction["columnDelta"])}
+            # Update the position in the appropriate direction to get ready to look for the next token in the pattern
+            position = { "row": (position["row"] + direction["rowOffset"]), "column": (position["column"] + direction["columnOffset"])}
 
         # If we made it this far, all the tokens in the pattern were
-        return True, positionsFound
+        return positionsFound
 
 
     def expectedTokenAtPosition(self, currentPlayer, position, token):
@@ -198,29 +230,14 @@ class Board:
         sys.exit(1)
 
 
-    def printBoard(self, board):
-        self.board = board
-        s = "   "
-        for column in range(19):
-            s += str(column  % 10) + "  "
-        s += "\n"
-        for row in range(19):
-            s += str(row % 10)  + "  "
-            for column in range(19):
-                s += str(self.board[column][row]) + "  "
-            s += "\n"
-        return s
-
-
-
     def __str__(self):
         s = "   "
         for column in range(19):
-            s += str(column  % 10) + "  "
+            s += str(column  % 10) + " "
         s += "\n"
         for row in range(19):
             s += str(row % 10)  + "  "
             for column in range(19):
-                s += str(self.board[column][row]) + "  "
+                s += str(self.board[column][row]) + " "
             s += "\n"
         return s

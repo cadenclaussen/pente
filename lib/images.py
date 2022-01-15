@@ -5,6 +5,13 @@ from PIL import ImageTk
 images = {}
 
 
+def getImageByColor(color):
+    global images
+    if images == {}:
+        images = __loadImages()
+    return images[color]
+
+
 # Returns a dictionary of images (key/value pair)
 def getImages():
     global images
@@ -175,6 +182,9 @@ def __loadImages():
     images['cornerSoutheast'] = __loadTransposed('lib/images/corner.gif', PI.ROTATE_180)
     images['cornerSoutheastBlue'] = __loadTransposed('lib/images/cornerBlue.gif', PI.ROTATE_180)
     images['cornerSoutheastRed'] = __loadTransposed('lib/images/cornerRed.gif', PI.ROTATE_180)
+
+    # images['Blue'] = __load('lib/images/blue.gif')
+    # images['Red'] = __load('lib/images/red.gif')
 
     return images
 

@@ -25,65 +25,71 @@ def newGame():
 
 def playBead(position):
     global game, board, players, currentPlayer
+
+    currentPlayer.points = 0
+
     board.playBead(currentPlayer, position)
     game.beadsPlayed += 1
 
-    # TODO: Update game/players if winning patterns found
-    print("Finding winning patterns")
-    winningPatterns = board.findWinningPatterns(currentPlayer)
+    if board.findJumpPatterns(currentPlayer, position):
+        currentPlayer.jumps += len(board.jumpPatterns)
+        if currentPlayer.jumps >= 5:
+            game.winner = True
+    currentPlayer.points += currentPlayer.jumps
 
-    # TODO: Update game/players if jump patterns found
-    # TODO: If jumps exist, remove opponent beads
-
-    print("Finding Jump patterns")
-    jumps, positionsFound = board.findJumpPatterns(currentPlayer, position)
-
-    if jumps != []:
-        currentPlayer.jumps += 1
-        currentPlayer.score += 1
-        if jumps[0]["pattern"]["name"] == "Jump":
-            board.removeFromBoard(jumps[0]["positions"][1])
-            board.removeFromBoard(jumps[0]["positions"][0])
-
-        positionsFound = jumps[0]["positions"]
-
-    if winningPatterns != []:
-        currentPlayer.score += 5
+    if board.findWinningPatterns(currentPlayer):
+        currentPlayer.points += 5
         game.winner = True
 
-    if currentPlayer.jumps >= 5:
-        game.winner = True
+    board.findAnnouncePatterns(currentPlayer)
 
-    # TODO: Process announce patterns
+    if board.findPointPatterns(currentPlayer):
+        currentPlayer.points += len(board.pointPatterns[currentPlayer.name])
 
-    print("Finding announce patterns")
-    board.findPatternsToAnnounce(currentPlayer)
+    __nextPlayer()
 
-    # TODO: Update game/player with scores
-    print("Finding score patterns")
-    scorePatterns = board.findScorePatterns(currentPlayer)
-    if scorePatterns != []: 
-        currentPlayer.score += len(scorePatterns) - 1
+    currentPlayer.points = 0
+    currentPlayer.points += currentPlayer.jumps
+    if board.findPointPatterns(currentPlayer):
+        currentPlayer.points += len(board.pointPatterns[currentPlayer.name])
+
+    __ux()
+    return game, board, players, currentPlayer
 
 
+def __ux():
+    global game, board, players, currentPlayer
     print(board)
-    print(str(currentPlayer) + " played at " + str(position["column"]) + ", " + str(position["row"]))
+    print()
+    __printPlayer(players[0])
+    __printPlayer(players[1])
+    print()
+    print("Winner: " + str(game.winner))
+    print()
+    print("Next Move: " + currentPlayer.name)
 
-    print(currentPlayer, ": ")
-    print(str(currentPlayer.jumps), " jumps")
-    print(str(currentPlayer.score), " score")
 
-    __nextPlayer()
+def __printPlayer(player):
+    print(player.name)
+    print("------------------------------")
+    print("Jumps: " + str(player.jumps))
+    print("Points: " + str(player.points))
+    if board.pointPatterns[player.name] != []:
+        print("Point patterns: ")
+        for pointPattern in board.pointPatterns[player.name]:
+            print(pointPattern["name"] + __positions(pointPattern["positions"]))
+    if board.announcePatterns[player.name] != []:
+        print("Announce patterns: ")
+        for announcePattern in board.announcePatterns[player.name]:
+            print(announcePattern["name"] + __positions(announcePattern["positions"]))
+    print()
 
-    print(currentPlayer, ": ")
-    print(str(currentPlayer.jumps), " jumps")
-    print(str(currentPlayer.score), " score")
 
-    __nextPlayer()
-    __nextPlayer()
-
-    print(str(currentPlayer) + " turn...")
-    return game, board, players, currentPlayer, positionsFound
+def __positions(positions):
+    s = ""
+    for position in positions:
+        s += " (" + str(position["column"]) + "," + str(position["row"]) + ")"
+    return s
 
 
 def __nextPlayer():

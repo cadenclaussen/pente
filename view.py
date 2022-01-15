@@ -6,6 +6,9 @@ import controller
 
 
 boardFrame = None
+player1 = None
+player2 = None
+
 game = None
 board = None
 players = None
@@ -13,7 +16,7 @@ currentPlayer = None
 
 
 def main():
-    global board, game, players, currentPlayer
+    global boardFrame, player1, player2, board, game, players, currentPlayer
 
     # creating main tkinter window/toplevel
     root = tk.Tk()
@@ -37,39 +40,11 @@ def main():
     ttk.Label(header, text='by Caden Claussen and Shane Claussen').grid(row=1, column=0, sticky="nsew")
 
     newGame(boardFrame)
-    updatePlayers(player1, player2, players)
 
     ttk.Label(footer, text='Footer 1').grid(row=0, column=0, sticky="nsew")
     ttk.Label(footer, text='Footer 2').grid(row=1, column=0, sticky="nsew")
 
     root.mainloop()
-
-
-def updatePlayers(player1, player2, players):
-    ttk.Label(player1, text="Name").grid(row=0, column=0, sticky="e")
-    ttk.Label(player1, text=players[0].name).grid(row=0, column=1, sticky="w")
-
-    ttk.Label(player1, text="Color").grid(row=1, column=0, sticky="e")
-    ttk.Label(player1, text=players[0].color).grid(row=1, column=1, sticky="w")
-
-    ttk.Label(player1, text="Jumps").grid(row=2, column=0, sticky="e")
-    ttk.Label(player1, text=players[0].jumps).grid(row=2, column=1, sticky="w")
-
-    ttk.Label(player1, text="Points").grid(row=3, column=0, sticky="e")
-    ttk.Label(player1, text=players[0].score).grid(row=3, column=1, sticky="w")
-
-
-    ttk.Label(player2, text="Name").grid(row=0, column=0, sticky="e")
-    ttk.Label(player2, text=players[1].name).grid(row=0, column=1, sticky="w")
-
-    ttk.Label(player2, text="Color").grid(row=1, column=0, sticky="e")
-    ttk.Label(player2, text=players[1].color).grid(row=1, column=1, sticky="w")
-
-    ttk.Label(player2, text="Jumps").grid(row=2, column=0, sticky="e")
-    ttk.Label(player2, text=players[1].jumps).grid(row=2, column=1, sticky="w")
-
-    ttk.Label(player2, text="Points").grid(row=3, column=0, sticky="e")
-    ttk.Label(player2, text=players[1].score).grid(row=3, column=1, sticky="w")
 
 
 def newGame(boardFrame):
@@ -87,6 +62,7 @@ def newGame(boardFrame):
             label.bind("<Button-1>", playBead)
 
     game, board, players, currentPlayer = controller.newGame()
+    updateUx(game, board, players, currentPlayer)
 
 
 def enter(e):
@@ -129,7 +105,7 @@ def playBead(e):
     if game.beadsPlayed == 0 and (row != 9 or column != 9):
         return
 
-    if game. beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
+    if game.beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
         return
 
     e.widget.config(image=getBeadImage(row, column, currentPlayer.color))
@@ -137,23 +113,48 @@ def playBead(e):
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
+    game, board, players, currentPlayer = controller.playBead({ "row": row, "column": column })
+    updateUx(game, board, players, currentPlayer)
 
-    game, board, players, currentPlayer, beadsToRemove = controller.playBead({ "row": row, "column": column })
-    if beadsToRemove != []:
-        for position in beadsToRemove:
+
+def updateUx(game, board, players, currentPlayer):
+    global player1, player2, boardFrame
+
+    for jumpPattern in board.jumpPatterns:
+        for position in jumpPattern["positions"]:
             row = position["row"]
             column = position["column"]
-            image = getImage(row, column)
-            label = Label(boardLabelFrame, image=image, width=27, height=27, padx=0, pady=0)
+            label = ttk.Label(boardFrame, image=getImage(row, column), borderwidth=0)
             label.grid(row=row, column=column, padx=0, pady=0)
             label.bind("<Enter>", enter)
             label.bind("<Leave>", leave)
             label.bind("<Button-1>", playBead)
-    board.beadsToRemove = []
 
+    ttk.Label(player1, text="Name").grid(row=0, column=0, sticky="e")
+    ttk.Label(player1, text=players[0].name).grid(row=0, column=1, sticky="w")
+
+    # ttk.Label(boardFrame, image=getImageByColor(players[0].color), borderwidth=0)
+
+    ttk.Label(player1, text="Jumps:").grid(row=2, column=0, sticky="e")
+    ttk.Label(player1, text=players[0].jumps).grid(row=2, column=1, sticky="w")
+
+    ttk.Label(player1, text="Points:").grid(row=3, column=0, sticky="e")
+    ttk.Label(player1, text=players[0].points).grid(row=3, column=1, sticky="w")
+
+
+    ttk.Label(player2, text="Name").grid(row=0, column=0, sticky="e")
+    ttk.Label(player2, text=players[1].name).grid(row=0, column=1, sticky="w")
+
+    ttk.Label(player2, text="Color").grid(row=1, column=0, sticky="e")
+    ttk.Label(player2, text=players[1].color).grid(row=1, column=1, sticky="w")
+
+    ttk.Label(player2, text="Jumps:").grid(row=2, column=0, sticky="e")
+    ttk.Label(player2, text=players[1].jumps).grid(row=2, column=1, sticky="w")
+
+    ttk.Label(player2, text="Points:").grid(row=3, column=0, sticky="e")
+    ttk.Label(player2, text=players[1].points).grid(row=3, column=1, sticky="w")
 
     if (game.isWinner()):
-        newGame()
-
+        newGame(boardFrame)
 
 main()
