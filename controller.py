@@ -16,7 +16,7 @@ def newGame():
     global game, board, players, currentPlayer
     game = Game()
     board = Board()
-    players = [ Player("Shane", "Blue", 0), Player("Caden", "Red", 1) ]
+    players = [ Player("Shane", "Blue", 0), Player("Caden", "Green", 1) ]
     currentPlayer = random.choice(players)
     print(board)
     print(str(currentPlayer) + " turn...")

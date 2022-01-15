@@ -102,6 +102,8 @@ def __loadImages():
     images['BlueHighlight'] = __load('lib/images/BlueHighlight.gif')
     images['Red'] = __load('lib/images/Red.gif')
     images['RedHighlight'] = __load('lib/images/RedHighlight.gif')
+    images['Green'] = __load('lib/images/Green.gif')
+    images['GreenHighlight'] = __load('lib/images/GreenHighlight.gif')
 
     types = [
         {
@@ -170,7 +172,7 @@ def __loadImages():
 
 def __loadImageGroup(type, direction, rotation):
     global images
-    colors = [ 'Open', 'Blue', 'Red' ]
+    colors = [ 'Open', 'Blue', 'Red', 'Green' ]
     for color in colors:
         if rotation is None:
             key = color + '_' + type["name"] + direction
