@@ -48,6 +48,8 @@ def playBead(x, y):
 
     __nextPlayer()
 
+    board.findAnnouncePatterns(currentPlayer.color)
+
     currentPlayer.points = 0
     currentPlayer.points += currentPlayer.jumps
     if board.findPointPatterns(currentPlayer):

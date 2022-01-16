@@ -33,6 +33,21 @@ class Board:
         self.board[y][x]['bead'] = color
 
 
+    def setHighlight(self, x, y):
+        self.board[y][x]['highlight'] = True
+
+
+    def getHighlight(self, x, y):
+        return self.board[y][x]['highlight']
+
+
+    def clearHighlights(self, color):
+        for y in range(19):
+            for x in range(19):
+                if self.getBead(x, y) == color:
+                    self.board[y][x]["highlight"] = False
+
+
     def removeBead(self, x, y):
         self.board[y][x]['bead'] = 'Open'
 
@@ -89,6 +104,7 @@ class Board:
 
 
     def findAnnouncePatterns(self, color):
+        self.clearHighlights(color)
         self.announcePatterns[color] = []
 
         patterns = []
@@ -109,6 +125,12 @@ class Board:
                 cumulativePatternsFound += patternsFound
 
         self.announcePatterns[color] = cumulativePatternsFound
+
+        for announcePattern in self.announcePatterns[color]:
+            for position in announcePattern['positions']:
+                print('Highlighting ' + str(position['x']), str(position['y']))
+                self.setHighlight(position['x'], position['y'])
+
         return self.announcePatterns[color] != []
 
 
@@ -263,6 +285,10 @@ class Board:
                 if self.isOpen(x, y):
                     s += '. '
                 else:
-                    s += self.getBead(x, y)[0] + ' '
+                    print(self.board[y][x])
+                    if self.getHighlight(x, y):
+                        s += self.getBead(x, y)[0] + ' '
+                    else:
+                        s += self.getBead(x, y)[0].lower() + ' '
             s += '\n'
         return s

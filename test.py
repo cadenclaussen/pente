@@ -113,7 +113,8 @@ def __positions(positions):
 def __init():
     player1 = Player('Shane', 'Blue', 0)
     player2 = Player('Caden', 'Red', 1)
-    return Game(), Board(), [ player1, player2], player1
+    players = [ player1, player2 ]
+    return Game(), Board(players), players, player1
 
 
 def __tc(name):
