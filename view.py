@@ -114,7 +114,7 @@ def playBead(e):
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
-    game, board, players, currentPlayer = controller.playBead({ "row": row, "column": column })
+    game, board, players, currentPlayer = controller.playBead(column, row)
     updateUx(game, board, players, currentPlayer)
 
 
@@ -123,8 +123,8 @@ def updateUx(game, board, players, currentPlayer):
 
     for jumpPattern in board.jumpPatterns:
         for position in jumpPattern["positions"]:
-            row = position["row"]
-            column = position["column"]
+            row = position["y"]
+            column = position["x"]
             label = tk.Label(boardFrame, image=getImage(row, column, False), borderwidth=0)
             label.grid(row=row, column=column, padx=0, pady=0)
             label.bind("<Enter>", enter)

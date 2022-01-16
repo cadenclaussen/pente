@@ -5,17 +5,13 @@ from Game import Game
 
 
 def testBoard():
-    print()
-    print('testBoard')
-    print()
+    __tc('testBoard')
     game, board, players, currentPlayer = __init()
     print(board)
 
 
 def testWinningPatterns():
-    print()
-    print('testWinningPatterns')
-    print()
+    __tc('testWinningPatterns')
     game, board, players, currentPlayer = __init()
     __generateBeadSequence(board, 0, 0, Board.South, 9)
     __generateBeadSequence(board, 18, 0, Board.South, 9)
@@ -29,9 +25,7 @@ def testWinningPatterns():
 
 
 def testJumpPatterns():
-    print()
-    print('testJumpPatterns')
-    print()
+    __tc('testJumpPatterns')
     game, board, players, currentPlayer = __init()
     __generateJumpPattern(board, 9, 9, Board.North)
     __generateJumpPattern(board, 9, 9, Board.Northeast)
@@ -41,15 +35,13 @@ def testJumpPatterns():
     __generateJumpPattern(board, 9, 9, Board.Southwest)
     __generateJumpPattern(board, 9, 9, Board.West)
     __generateJumpPattern(board, 9, 9, Board.Northwest)
-    __printJumpPatterns(board, players, currentPlayer)
+    __printJumpPatterns(board, 9, 9, players, currentPlayer)
 
 
 def testAnnouncePatterns():
-    print()
-    print('testAnnouncePatterns')
-    print()
+    __tc('testAnnouncePatterns')
     game, board, players, currentPlayer = __init()
-    __printWinningPatterns(board, players, currentPlayer)
+    __generateRandomBoard(board, players, 150)
     __printAnnouncePatterns(board, players, currentPlayer)
 
 
@@ -58,7 +50,9 @@ def testPointPatterns():
     print('testPointPatterns')
     print()
     game, board, players, currentPlayer = __init()
+
     __generateRandomBoard(board, players, 150)
+
     __printPointPatterns(board, players, currentPlayer)
 
 
@@ -72,9 +66,9 @@ def __printWinningPatterns(board, players, currentPlayer):
         print(winningPattern['name'] + __positions(winningPattern['positions']))
 
 
-def __printJumpPatterns(board, players, currentPlayer):
+def __printJumpPatterns(board, x, y, players, currentPlayer):
     print()
-    board.findJumpPatterns(currentPlayer, x, y)
+    board.findJumpPatterns(x, y, currentPlayer.color)
     print()
     print(board)
     print()
@@ -88,12 +82,12 @@ def __printAnnouncePatterns(board, players, currentPlayer):
     print(board)
     print()
     print('Announce Patterns')
-    board.findAnnouncePatterns(players[0])
-    for announcePattern in board.announcePatterns[players[0].name]:
-        print(players[0].name + ': ' + announcePattern['name'] + __positions(announcePattern['positions']))
-    board.findAnnouncePatterns(players[1])
-    for announcePattern in board.announcePatterns[players[1].name]:
-        print(players[1].name + ': ' + announcePattern['name'] + __positions(announcePattern['positions']))
+    board.findAnnouncePatterns(players[0].color)
+    for announcePattern in board.announcePatterns[players[0].color]:
+        print(players[0].color + ': ' + announcePattern['name'] + __positions(announcePattern['positions']))
+    board.findAnnouncePatterns(players[1].color)
+    for announcePattern in board.announcePatterns[players[1].color]:
+        print(players[1].color + ': ' + announcePattern['name'] + __positions(announcePattern['positions']))
 
 
 def __printPointPatterns(board, players, currentPlayer):
@@ -101,12 +95,12 @@ def __printPointPatterns(board, players, currentPlayer):
     print(board)
     print()
     print('Point Patterns')
-    board.findPointPatterns(players[0])
-    for pointPattern in board.pointPatterns[players[0].name]:
-        print(players[0].name + ': ' + pointPattern['name'] + __positions(pointPattern['positions']))
-    board.findPointPatterns(players[1])
-    for pointPattern in board.pointPatterns[players[1].name]:
-        print(players[1].name + ': ' + pointPattern['name'] + __positions(pointPattern['positions']))
+    board.findPointPatterns(players[0].color)
+    for pointPattern in board.pointPatterns[players[0].color]:
+        print(players[0].color + ': ' + pointPattern['name'] + __positions(pointPattern['positions']))
+    board.findPointPatterns(players[1].color)
+    for pointPattern in board.pointPatterns[players[1].color]:
+        print(players[1].color + ': ' + pointPattern['name'] + __positions(pointPattern['positions']))
 
 
 def __positions(positions):
@@ -120,6 +114,12 @@ def __init():
     player1 = Player('Shane', 'Blue', 0)
     player2 = Player('Caden', 'Red', 1)
     return Game(), Board(), [ player1, player2], player1
+
+
+def __tc(name):
+    print()
+    print(name)
+    print()
 
 
 def __generateBeadSequence(board, x, y, direction, count):
@@ -140,7 +140,7 @@ def __generateRandomBoard(board, players, numberOfTurns):
         while True:
             x = random.randint(0, 18)
             y = random.randint(0, 18)
-            if board.getBead(x, y) == 'Open':
+            if board.isOpen(x, y):
                 break
         board.playBead(x, y, currentPlayer.color)
         if currentPlayer.key == 0:
@@ -150,7 +150,7 @@ def __generateRandomBoard(board, players, numberOfTurns):
 
 
 # testBoard()
-testWinningPatterns()
+# testWinningPatterns()
 # testJumpPatterns()
-# testAnnouncePatterns()
+testAnnouncePatterns()
 # testPointPatterns()

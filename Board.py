@@ -12,11 +12,15 @@ class Board:
     Northeast = { 'name': 'northeast', 'yOffset': -1, 'xOffset': 1 }
 
 
-    def __init__(self):
+    def __init__(self, players):
         self.jumpPatterns = []
         self.winningPatterns = []
-        self.announcePatterns = { 'Shane': [], 'Caden': [] }
-        self.pointPatterns = { 'Shane': [], 'Caden': [] }
+
+        self.announcePatterns = {}
+        self.pointPatterns = {}
+        for player in players:
+            self.announcePatterns[player.color] = []
+            self.pointPatterns[player.color] = []
 
         self.board = []
         for y in range(19):
@@ -44,7 +48,7 @@ class Board:
 
 
     # TODO: If there are three players this needs to be updated so the two opponent beads are the same bead
-    def findJumpPatterns(self, currentPlayer, x, y):
+    def findJumpPatterns(self, x, y, color):
         self.jumpPatterns = []
 
         patterns = []
@@ -52,7 +56,7 @@ class Board:
 
         cumulativePatternsFound = []
         for pattern in patterns:
-            patternsFound = self.__findPatternAtPosition(currentPlayer, patterns[0], x, y, [ Board.East, Board.Southeast, Board.South, Board.Southwest, Board.West, Board.Northwest, Board.North, Board.Northeast ], 'opponent')
+            patternsFound = self.__findPatternAtPosition(x, y, color, patterns[0], [ Board.East, Board.Southeast, Board.South, Board.Southwest, Board.West, Board.Northwest, Board.North, Board.Northeast ], 'opponent')
             if patternsFound:
                 cumulativePatternsFound += patternsFound
 
@@ -64,7 +68,7 @@ class Board:
         return self.jumpPatterns != []
 
 
-    def findWinningPatterns(self, currentPlayer):
+    def findWinningPatterns(self, color):
         self.winningPatterns = []
 
         patterns = []
@@ -76,7 +80,7 @@ class Board:
 
         cumulativePatternsFound = []
         for pattern in patterns:
-            patternsFound = self.__findPattern(currentPlayer, pattern, 'bead')
+            patternsFound = self.__findPattern(color, pattern, 'bead')
             if patternsFound:
                 cumulativePatternsFound += patternsFound
 
@@ -84,8 +88,8 @@ class Board:
         return self.winningPatterns != []
 
 
-    def findAnnouncePatterns(self, currentPlayer):
-        self.announcePatterns[currentPlayer.name] = []
+    def findAnnouncePatterns(self, color):
+        self.announcePatterns[color] = []
 
         patterns = []
         patterns.append({ 'name': 'Open Three', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'bead', 'open', 'not-bead' ] })
@@ -100,17 +104,17 @@ class Board:
 
         cumulativePatternsFound = []
         for pattern in patterns:
-            patternsFound = self.__findPattern(currentPlayer, pattern, 'bead')
+            patternsFound = self.__findPattern(color, pattern, 'bead')
             if patternsFound:
                 cumulativePatternsFound += patternsFound
 
-        self.announcePatterns[currentPlayer.name] = cumulativePatternsFound
-        return self.announcePatterns[currentPlayer.name] != []
+        self.announcePatterns[color] = cumulativePatternsFound
+        return self.announcePatterns[color] != []
 
 
     # TODO: Resolve the issue of a win ...
-    def findPointPatterns(self, currentPlayer):
-        self.pointPatterns[currentPlayer.name] = []
+    def findPointPatterns(self, color):
+        self.pointPatterns[color] = []
 
         patterns = []
         patterns.append({ 'name': 'Four', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
@@ -122,20 +126,19 @@ class Board:
 
         cumulativePatternsFound = []
         for pattern in patterns:
-            patternsFound = self.__findPattern(currentPlayer, pattern, 'bead')
+            patternsFound = self.__findPattern(color, pattern, 'bead')
             if patternsFound:
                 cumulativePatternsFound += patternsFound
 
-        self.pointPatterns[currentPlayer.name] = cumulativePatternsFound
+        self.pointPatterns[color] = cumulativePatternsFound
+        return self.pointPatterns[color] != []
 
-        return self.pointPatterns[currentPlayer.name] != []
 
-
-    def __findPattern(self, currentPlayer, pattern, tokenNameToSavePositionFor):
+    def __findPattern(self, color, pattern, tokenNameToSavePositionFor):
         cumulativePatternsFound = None
         for x in range(-1, 20):
             for y in range(-1, 20):
-                patternsFound = self.__findPatternAtPosition(currentPlayer, pattern, x, y, [ Board.East, Board.Southeast, Board.South, Board.Southwest ], tokenNameToSavePositionFor)
+                patternsFound = self.__findPatternAtPosition(x, y, color, pattern, [ Board.East, Board.Southeast, Board.South, Board.Southwest ], tokenNameToSavePositionFor)
                 if patternsFound:
                     if cumulativePatternsFound is None:
                         cumulativePatternsFound = []
@@ -143,10 +146,10 @@ class Board:
         return cumulativePatternsFound
 
 
-    def __findPatternAtPosition(self, currentPlayer, pattern, x, y, directions, tokenNameToSavePositionFor):
+    def __findPatternAtPosition(self, x, y, color, pattern, directions, tokenNameToSavePositionFor):
         patternsFound = None
         for direction in directions:
-            positionsFound = self.findPatternAtPositionInDirection(currentPlayer, pattern, x, y, direction, tokenNameToSavePositionFor)
+            positionsFound = self.findPatternAtPositionInDirection(x, y, color, pattern, direction, tokenNameToSavePositionFor)
             if positionsFound:
                 if patternsFound is None:
                     patternsFound = []
@@ -159,15 +162,15 @@ class Board:
     # - None if the pattern did not match in the direction
     # - An array of matched positions if the pattern was detected
     #   Note: If there are no detected positions but the patterns was found, then [] is returned
-    def findPatternAtPositionInDirection(self, currentPlayer, pattern, x, y, direction, tokenNameToSavePositionFor):
+    def findPatternAtPositionInDirection(self, x, y, color, pattern, direction, tokenNameToSavePositionFor):
         positionsFound = []
-        for token in pattern['tokens']:
-            if not self.__expectedTokenAtPosition(currentPlayer, x, y, token):
+        for expectedToken in pattern['tokens']:
+            if not self.__expectedTokenAtPosition(x, y, color, expectedToken):
                 # print('RETURNING')
                 # print()
                 return None
 
-            if token == tokenNameToSavePositionFor:
+            if expectedToken == tokenNameToSavePositionFor:
                 positionsFound.append({ 'x': x, 'y': y })
 
             # Update the position in the appropriate direction to get ready to look for the next token in the pattern
@@ -180,17 +183,17 @@ class Board:
         return positionsFound
 
 
-    def __expectedTokenAtPosition(self, currentPlayer, x, y, token):
+    def __expectedTokenAtPosition(self, x, y, color, expectedToken):
 
         # bead
         #
         # matches a bead played at the position by the current player
-        if token == 'bead':
+        if expectedToken == 'bead':
             # print('Looking for bead ' + str(x) + ' ' + str(y))
             if x > 18 or x < 0 or y > 18 or y < 0:
                 # print('  NOT found (out of bounds)')
                 return False
-            if self.getBead(x, y) == currentPlayer.color:
+            if self.getBead(x, y) == color:
                 # print('  Found')
                 return True
             # print('  NOT found (was not the players bead)')
@@ -199,17 +202,17 @@ class Board:
         # opponent
         #
         # matches a bead played at the position by an opposing player
-        if token == 'opponent':
+        if expectedToken == 'opponent':
             if x > 18 or x < 0 or y > 18 or y < 0:
                 return False
-            if not self.isOpen(x, y) and self.getBead(x, y) != currentPlayer.color:
+            if not self.isOpen(x, y) and self.getBead(x, y) != color:
                 return True
             return False
 
         # open
         #
         # matches a position with no bead
-        if token == 'open':
+        if expectedToken == 'open':
             if x > 18 or x < 0 or y > 18 or y < 0:
                 return False
             if self.isOpen(x, y):
@@ -223,21 +226,14 @@ class Board:
         # 1. a position that is off the board
         # 2. another player's bead
         # 3. an open position
-        if token == 'not-bead':
+        if expectedToken == 'not-bead':
             # print('Looking for not-bead ' + str(x) + ' ' + str(y))
             if x > 18 or x < 0 or y > 18 or y < 0:
-                # print('  Found (out of bounds)')
                 return True
 
-            if (self.getBead(x, y) != currentPlayer.color):
-                # print('  Found (not players bead)')
+            if (self.getBead(x, y) != color):
                 return True
 
-            # if (not self.isOpen(x, y)) and self.getBead(x, y) != currentPlayer.color:
-            #     return True
-            # if self.isOpen(x, y):
-            #     return True
-            # print('  NOT Found')
             return False
 
         # closed
@@ -245,14 +241,14 @@ class Board:
         # Matches two scenarios:
         # 1. a position that is off the board
         # 2. a position occupied by an opposing player's bead
-        if token == 'closed':
+        if expectedToken == 'closed':
             if (x > 18 or x < 0 or y > 18 or y < 0):
                 return True
-            if not self.isOpen(x, y) and self.getBead(x, y) != currentPlayer.color:
+            if not self.isOpen(x, y) and self.getBead(x, y) != color:
                 return True
             return False
 
-        print('board: we should never get here: token=' + token)
+        print('board: we should never get here: expectedToken=' + expectedToken)
         sys.exit(1)
 
 

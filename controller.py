@@ -15,43 +15,43 @@ currentPlayer = None
 def newGame():
     global game, board, players, currentPlayer
     game = Game()
-    board = Board()
     players = [ Player("Shane", "Blue", 0), Player("Caden", "Green", 1) ]
+    board = Board(players)
     currentPlayer = random.choice(players)
-    print(board)
-    print(str(currentPlayer) + " turn...")
+
+    __ux()
     return [ game, board, players, currentPlayer ]
 
 
-def playBead(position):
+def playBead(x, y):
     global game, board, players, currentPlayer
 
     currentPlayer.points = 0
 
-    board.playBead(currentPlayer, position)
+    board.playBead(x, y, currentPlayer.color)
     game.beadsPlayed += 1
 
-    if board.findJumpPatterns(currentPlayer, position):
+    if board.findJumpPatterns(x, y, currentPlayer.color):
         currentPlayer.jumps += len(board.jumpPatterns)
         if currentPlayer.jumps >= 5:
             game.winner = True
     currentPlayer.points += currentPlayer.jumps
 
-    if board.findWinningPatterns(currentPlayer):
+    if board.findWinningPatterns(currentPlayer.color):
         currentPlayer.points += 5
         game.winner = True
 
-    board.findAnnouncePatterns(currentPlayer)
+    board.findAnnouncePatterns(currentPlayer.color)
 
-    if board.findPointPatterns(currentPlayer):
-        currentPlayer.points += len(board.pointPatterns[currentPlayer.name])
+    if board.findPointPatterns(currentPlayer.color):
+        currentPlayer.points += len(board.pointPatterns[currentPlayer.color])
 
     __nextPlayer()
 
     currentPlayer.points = 0
     currentPlayer.points += currentPlayer.jumps
     if board.findPointPatterns(currentPlayer):
-        currentPlayer.points += len(board.pointPatterns[currentPlayer.name])
+        currentPlayer.points += len(board.pointPatterns[currentPlayer.color])
 
     __ux()
     return game, board, players, currentPlayer
@@ -74,21 +74,24 @@ def __printPlayer(player):
     print("------------------------------")
     print("Jumps: " + str(player.jumps))
     print("Points: " + str(player.points))
-    if board.pointPatterns[player.name] != []:
+
+    if board.pointPatterns[player.color] != []:
         print("Point patterns: ")
-        for pointPattern in board.pointPatterns[player.name]:
+        for pointPattern in board.pointPatterns[player.color]:
             print(pointPattern["name"] + __positions(pointPattern["positions"]))
-    if board.announcePatterns[player.name] != []:
+
+    if board.announcePatterns[player.color] != []:
         print("Announce patterns: ")
-        for announcePattern in board.announcePatterns[player.name]:
+        for announcePattern in board.announcePatterns[player.color]:
             print(announcePattern["name"] + __positions(announcePattern["positions"]))
+
     print()
 
 
 def __positions(positions):
     s = ""
     for position in positions:
-        s += " (" + str(position["column"]) + "," + str(position["row"]) + ")"
+        s += " (" + str(position["x"]) + "," + str(position["y"]) + ")"
     return s
 
 
