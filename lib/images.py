@@ -16,14 +16,14 @@ def getImageByColor(color, highlight):
 
 
 # Returns the image that goes at the row and colum in Pente
-def getImage(row, column, highlight):
+def getImage(x, y, highlight):
     global images
-    return getBeadImage(row, column, 'Open', highlight)
+    return getBeadImage(x, y, 'Open', highlight)
 
 
 # Returns the image that goes at the row and colum in Pente
 # with a bead played in that location
-def getBeadImage(row, column, color, highlight):
+def getBeadImage(x, y, color, highlight):
     global images
 
     # Singleton lazy load all the images
@@ -34,60 +34,60 @@ def getBeadImage(row, column, color, highlight):
     if highlight:
         highlightDescriptor = 'Highlight'
 
-    return images[color + '_' + __getKey(row, column) + highlightDescriptor]
+    return images[color + '_' + __getKey(x, y) + highlightDescriptor]
 
 
-def __getKey(row, column):
+def __getKey(x, y):
     global images
 
     # NOTE: These are very order dependent, do not move them around
 
     # Diamonds
-    if (row == 6 and column == 6) or (row == 6 and column == 12) or (row == 12 and column == 6) or (row == 12 and column == 12):
+    if (y == 6 and x == 6) or (y == 6 and x == 12) or (y == 12 and x == 6) or (y == 12 and x == 12):
         return 'Diamond'
-    if (row == 3 and column == 3) or (row == 3 and column == 15) or (row == 15 and column == 3) or (row == 15 and column == 15):
+    if (y == 3 and x == 3) or (y == 3 and x == 15) or (y == 15 and x == 3) or (y == 15 and x == 15):
         return 'Diamond'
-    if (row == 3 and column == 9) or (row == 15 and column == 9):
+    if (y == 3 and x == 9) or (y == 15 and x == 9):
         return 'Diamond_Bold1_North'
-    if (row == 9 and column == 3) or (row == 9 and column == 15):
+    if (y == 9 and x == 3) or (y == 9 and x == 15):
         return 'Diamond_Bold1_East'
-    if row == 9 and column == 9:
+    if y == 9 and x == 9:
         return 'Diamond_Bold2'
 
     # Handle the Corners
-    if row == 0 and column == 0:
+    if y == 0 and x == 0:
         return 'Corner_Northwest'
-    if row == 0 and column == 18:
+    if y == 0 and x == 18:
         return 'Corner_Northeast'
-    if row == 18 and column == 0:
+    if y == 18 and x == 0:
         return 'Corner_Southwest'
-    if row == 18 and column == 18:
+    if y == 18 and x == 18:
         return 'Corner_Southeast'
 
     # Bold T Intersections (outer edge)
-    if row == 0 and column == 9:
+    if y == 0 and x == 9:
         return 'TIntersection_Bold2_North'
-    if row == 9 and column == 0:
+    if y == 9 and x == 0:
         return 'TIntersection_Bold2_West'
-    if row == 9 and column == 18:
+    if y == 9 and x == 18:
         return 'TIntersection_Bold2_East'
-    if row == 18 and column == 9:
+    if y == 18 and x == 9:
         return 'TIntersection_Bold2_South'
 
     # T Intersections (outer edge)
-    if row == 0:
+    if y == 0:
         return 'TIntersection_Bold1_North'
-    if column == 0:
+    if x == 0:
         return 'TIntersection_Bold1_West'
-    if column == 18:
+    if x == 18:
         return 'TIntersection_Bold1_East'
-    if row == 18:
+    if y == 18:
         return 'TIntersection_Bold1_South'
 
     # Bold midway Vertical and Horizontal lines
-    if column == 9:
+    if x == 9:
         return 'Intersection_Bold1_North'
-    if row == 9:
+    if y == 9:
         return 'Intersection_Bold1_East'
 
     # Default Intersection

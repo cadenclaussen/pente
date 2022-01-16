@@ -8,6 +8,7 @@ import controller
 boardFrame = None
 player1 = None
 player2 = None
+highlights = []
 
 game = None
 board = None
@@ -52,10 +53,10 @@ def newGame(boardFrame):
     # Add all the 19x19 images to the boardFrame to initialize the board
     # - For each spot on the board, bind enter, leave, and playBead functions
     # - Upper left is [0, 0], bottom right is [18, 18], middle is [9, 9]
-    for row in range(19):
-        for column in range(19):
-            label = tk.Label(boardFrame, image=getImage(row, column, False), borderwidth=0)
-            label.grid(row=row, column=column)
+    for y in range(19):
+        for x in range(19):
+            label = tk.Label(boardFrame, image=getImage(x, y, False), borderwidth=0)
+            label.grid(row=y, column=x)
             label.bind("<Enter>", enter)
             label.bind("<Leave>", leave)
             label.bind("<Button-1>", playBead)
@@ -67,20 +68,20 @@ def newGame(boardFrame):
 def enter(e):
     global boardFrame, player1Frame, matchFrame, player2Frame, game, board, players, currentPlayer
 
-    row = int(e.widget.grid_info()['row'])
-    column = int(e.widget.grid_info()['column'])
+    x = int(e.widget.grid_info()['column'])
+    y = int(e.widget.grid_info()['row'])
 
-    if game.beadsPlayed == 0 and (row != 9 or column != 9):
+    if game.beadsPlayed == 0 and (x != 9 or y != 9):
         return
 
-    if game.beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
+    if game.beadsPlayed == 2 and (y > 6 and y < 12 and x > 6 and x < 12):
         return
 
     # Show the players bead so they can visualize what it would look
     # like in that position on the board.  Note: This temporary bead
     # is removed by the leave() function when the player's mouse
     # leaves the position.
-    e.widget.config(image=getBeadImage(row, column, currentPlayer.color, False))
+    e.widget.config(image=getBeadImage(x, y, currentPlayer.color, False))
 
 
 # When the mouse enters the board, if the spot is empty, the leave
@@ -91,45 +92,65 @@ def enter(e):
 def leave(e):
     global boardFrame, player1Frame, matchFrame, player2Frame, game, board, players, currentPlayer
 
-    row = int(e.widget.grid_info()['row'])
-    column = int(e.widget.grid_info()['column'])
-    e.widget.config(image=getImage(row, column, False))
+    x = int(e.widget.grid_info()['column'])
+    y = int(e.widget.grid_info()['row'])
+    e.widget.config(image=getImage(x, y, False))
 
 
 def playBead(e):
     global boardFrame, player1Frame, matchFrame, player2Frame, game, board, players, currentPlayer
 
     # Get the row and column the bead was played at
-    row = int(e.widget.grid_info()['row'])
-    column = int(e.widget.grid_info()['column'])
+    x = int(e.widget.grid_info()['column'])
+    y = int(e.widget.grid_info()['row'])
 
-    if game.beadsPlayed == 0 and (row != 9 or column != 9):
+    if game.beadsPlayed == 0 and (y != 9 or x != 9):
         return
 
-    if game.beadsPlayed == 2 and (row > 6 and row < 12 and column > 6 and column < 12):
+    if game.beadsPlayed == 2 and (y > 6 and y < 12 and x > 6 and x < 12):
         return
 
-    e.widget.config(image=getBeadImage(row, column, currentPlayer.color, False))
+    e.widget.config(image=getBeadImage(x, y, currentPlayer.color, False))
     e.widget.unbind("<Enter>")
     e.widget.unbind("<Leave>")
     e.widget.unbind("<Button-1>")
 
-    game, board, players, currentPlayer = controller.playBead(column, row)
+    game, board, players, currentPlayer = controller.playBead(x, y)
     updateUx(game, board, players, currentPlayer)
 
 
 def updateUx(game, board, players, currentPlayer):
-    global boardFrame, player1Frame, matchFrame, player2Frame
+    global boardFrame, player1Frame, matchFrame, player2Frame, highlights
 
+    # Clear the old highlights
+    for position in highlights:
+        x = position["x"]
+        y = position["y"]
+        label = tk.Label(boardFrame, image=getBeadImage(x, y, board.getBead(x, y), False), borderwidth=0)
+        label.grid(row=y, column=x, padx=0, pady=0)
+
+    # Remove any jumped beads
     for jumpPattern in board.jumpPatterns:
         for position in jumpPattern["positions"]:
-            row = position["y"]
-            column = position["x"]
-            label = tk.Label(boardFrame, image=getImage(row, column, False), borderwidth=0)
-            label.grid(row=row, column=column, padx=0, pady=0)
+            x = position["x"]
+            y = position["y"]
+            label = tk.Label(boardFrame, image=getImage(x, y, False), borderwidth=0)
+            label.grid(row=y, column=x, padx=0, pady=0)
             label.bind("<Enter>", enter)
             label.bind("<Leave>", leave)
             label.bind("<Button-1>", playBead)
+
+    # Set the new higlights
+    highlights = []
+    for player in players:
+        for announcePattern in board.announcePatterns[player.color]:
+            for position in announcePattern['positions']:
+                highlights.append(position)
+                print(player.color + ': ' + str(position))
+                x = position['x']
+                y = position['y']
+                label = tk.Label(boardFrame, image=getBeadImage(x, y, player.color, True), borderwidth=0)
+                label.grid(row=y, column=x, padx=0, pady=0)
 
     __uxMatch(matchFrame, players)
     __uxPlayer(player1Frame, players[0])

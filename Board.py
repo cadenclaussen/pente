@@ -33,12 +33,20 @@ class Board:
         self.board[y][x]['bead'] = color
 
 
-    def setHighlight(self, x, y):
-        self.board[y][x]['highlight'] = True
+    def removeBead(self, x, y):
+        self.board[y][x]['bead'] = 'Open'
+
+
+    def getBead(self, x, y):
+        return self.board[y][x]['bead']
 
 
     def getHighlight(self, x, y):
         return self.board[y][x]['highlight']
+
+
+    def setHighlight(self, x, y):
+        self.board[y][x]['highlight'] = True
 
 
     def clearHighlights(self, color):
@@ -48,16 +56,6 @@ class Board:
                     self.board[y][x]["highlight"] = False
 
 
-    def removeBead(self, x, y):
-        self.board[y][x]['bead'] = 'Open'
-
-
-    # TODO: Use a consistent position or y/x model
-    def getBead(self, x, y):
-        return self.board[y][x]['bead']
-
-
-    # TODO: Use a consistent position or y/x model
     def isOpen(self, x, y):
         return (self.board[y][x]['bead'] == 'Open')
 
