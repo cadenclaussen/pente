@@ -52,7 +52,7 @@ def playBead(x, y):
 
     currentPlayer.points = 0
     currentPlayer.points += currentPlayer.jumps
-    if board.findPointPatterns(currentPlayer):
+    if board.findPointPatterns(currentPlayer.color):
         currentPlayer.points += len(board.pointPatterns[currentPlayer.color])
 
     __ux()
