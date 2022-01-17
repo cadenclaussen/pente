@@ -2,102 +2,138 @@
 # highlight announces
 import random
 from Player import Player
-from Game import Game
+from Match import Match
 from Board import Board
 
 
-game = None
+match = None
 board = None
 players = None
 currentPlayer = None
 
 
-def newGame():
-    global game, board, players, currentPlayer
-    game = Game()
-    players = [ Player("Shane", "Blue", 0), Player("Caden", "Green", 1) ]
-    board = Board(players)
-    currentPlayer = random.choice(players)
+def newMatch():
+    global match, board, players, currentPlayer
+    match = Match()
+    players = [ Player('Shane', 'Blue', 0), Player('Caden', 'Green', 1) ]
+    return [ match, board, players, currentPlayer ]
 
-    __ux()
-    return [ game, board, players, currentPlayer ]
+
+def newGame():
+    global match, board, players, currentPlayer
+    board = Board(players)
+    if match.losingPlayer is None:
+        currentPlayer = random.choice(players)
+    else:
+        currentPlayer = match.losingPlayer
+    match.newGame()
+
+    printDebug()
+    return [ match, board, players, currentPlayer ]
 
 
 def playBead(x, y):
-    global game, board, players, currentPlayer
+    global match, board, players, currentPlayer
 
-    currentPlayer.points = 0
-
+    # Algorithm upon placing a bead:
+    # - Put the bead on the board object
+    # - Jumps: If the move result in jump(s), save them, adjust game points, and set game winner if > 5
+    # - Winning Patterns: If the move resulted in winning pattern(s), adjust game points and set game winner
+    # - Point Patterns: Find all point patterns as a result of the move, adjust points
+    # - Announce Patterns: Find all announce patterns as a result of the move, save them
+    # - Match Win: If there was a game win, determine if it caused a match win, if so set match winner
+    #
+    # - Change to the next player
+    # - Point Patterns: Find all point patterns as a result of the move, adjust points
+    # - Announce Patterns: Find all announce patterns as a result of the move, save them
     board.playBead(x, y, currentPlayer.color)
-    game.beadsPlayed += 1
+    match.beadsPlayed += 1
 
+    currentPlayer.gamePoints = 0
     if board.findJumpPatterns(x, y, currentPlayer.color):
         currentPlayer.jumps += len(board.jumpPatterns)
         if currentPlayer.jumps >= 5:
-            game.winner = True
-    currentPlayer.points += currentPlayer.jumps
+            match.gameWinner = True
+    currentPlayer.gamePoints += currentPlayer.jumps
 
     if board.findWinningPatterns(currentPlayer.color):
-        currentPlayer.points += 5
-        game.winner = True
+        currentPlayer.gamePoints += 5
+        match.gameWinner = True
+
+    if board.findPointPatterns(currentPlayer.color):
+        currentPlayer.gamePoints += len(board.pointPatterns[currentPlayer.color])
 
     board.findAnnouncePatterns(currentPlayer.color)
 
-    if board.findPointPatterns(currentPlayer.color):
-        currentPlayer.points += len(board.pointPatterns[currentPlayer.color])
+    if match.isGameWinner():
+        currentPlayer.matchPoints += currentPlayer.gamePoints
+        currentPlayer.gamePoints = 0
+        if currentPlayer.matchPoints > 8:
+            match.matchWinner = True
 
-    __nextPlayer()
+
+    nextPlayer()
+
+
+    currentPlayer.gamePoints = 0
+    currentPlayer.gamePoints += currentPlayer.jumps
+    if board.findPointPatterns(currentPlayer.color):
+        currentPlayer.gamePoints += len(board.pointPatterns[currentPlayer.color])
 
     board.findAnnouncePatterns(currentPlayer.color)
 
-    currentPlayer.points = 0
-    currentPlayer.points += currentPlayer.jumps
-    if board.findPointPatterns(currentPlayer.color):
-        currentPlayer.points += len(board.pointPatterns[currentPlayer.color])
-
-    __ux()
-    return game, board, players, currentPlayer
+    if match.isGameWinner():
+        currentPlayer.matchPoints += currentPlayer.gamePoints
+        currentPlayer.gamePoints = 0
+        match.losingPlayer = currentPlayer
 
 
-def __ux():
+    printDebug()
+    return match, board, players, currentPlayer
+
+
+def printDebug():
     global game, board, players, currentPlayer
     print(board)
     print()
-    __printPlayer(players[0])
-    __printPlayer(players[1])
+    printPlayer(players[0])
+    printPlayer(players[1])
     print()
-    print("Winner: " + str(game.winner))
+    print('Game Count: ' + str(match.gameCount))
+    print('Game Winner: ' + str(match.isGameWinner()))
+    print('Match Winner: ' + str(match.isMatchWinner()))
     print()
-    print("Next Move: " + currentPlayer.name)
+    print('Next Move: ' + currentPlayer.name)
 
 
-def __printPlayer(player):
+def printPlayer(player):
     print(player.name)
-    print("------------------------------")
-    print("Jumps: " + str(player.jumps))
-    print("Points: " + str(player.points))
+    print('------------------------------')
+    print('Jumps: ' + str(player.jumps))
+    print('Match points: ' + str(player.matchPoints))
+    print('Game points: ' + str(player.gamePoints))
 
     if board.pointPatterns[player.color] != []:
-        print("Point patterns: ")
+        print('Point patterns: ')
         for pointPattern in board.pointPatterns[player.color]:
-            print(pointPattern["name"] + __positions(pointPattern["positions"]))
+            print('  ' + pointPattern['name'] + positions(pointPattern['positions']))
 
     if board.announcePatterns[player.color] != []:
-        print("Announce patterns: ")
+        print('Announce patterns: ')
         for announcePattern in board.announcePatterns[player.color]:
-            print(announcePattern["name"] + __positions(announcePattern["positions"]))
+            print('  ' + announcePattern['name'] + positions(announcePattern['positions']))
 
     print()
 
 
-def __positions(positions):
-    s = ""
+def positions(positions):
+    s = ''
     for position in positions:
-        s += " (" + str(position["x"]) + "," + str(position["y"]) + ")"
+        s += ' (' + str(position['x']) + ',' + str(position['y']) + ')'
     return s
 
 
-def __nextPlayer():
+def nextPlayer():
     global game, board, players, currentPlayer
     if currentPlayer.key == 0:
         currentPlayer = players[1]
