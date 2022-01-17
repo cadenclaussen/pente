@@ -6,7 +6,7 @@ import controller
 boardFrame = None
 player1 = None
 player2 = None
-highlights = []
+beadHighlights = []
 
 match = None
 board = None
@@ -51,10 +51,10 @@ def newMatch():
 
 
 def newGame():
-    global match, board, players, currentPlayer, highlights
+    global match, board, players, currentPlayer, beadHighlights
     initializeBoard()
     match, board, players, currentPlayer = controller.newGame()
-    highlights = []
+    beadHighlights = []
     updateUx(match, board, players, currentPlayer)
 
 
@@ -137,10 +137,10 @@ def playBead(e):
 
 
 def updateUx(match, board, players, currentPlayer):
-    global boardFrame, player1Frame, matchFrame, player2Frame, highlights
+    global boardFrame, player1Frame, matchFrame, player2Frame, beadHighlights
 
-    # Clear the old highlights
-    for position in highlights:
+    # Clear the old beadHighlights
+    for position in beadHighlights:
         x = position['x']
         y = position['y']
         label = Label(boardFrame, image=getBeadImage(x, y, board.getBead(x, y), False), borderwidth=0)
@@ -158,11 +158,11 @@ def updateUx(match, board, players, currentPlayer):
             label.bind('<Button-1>', playBead)
 
     # Set the new higlights
-    highlights = []
+    beadHighlights = []
     for player in players:
         for announcePattern in board.announcePatterns[player.color]:
             for position in announcePattern['positions']:
-                highlights.append(position)
+                beadHighlights.append(position)
                 x = position['x']
                 y = position['y']
                 label = Label(boardFrame, image=getBeadImage(x, y, player.color, True), borderwidth=0)
@@ -197,10 +197,10 @@ def updatePlayerDashboard(frame, player):
     global boardFrame, matchFrame, match, board, players, currentPlayer
 
     Label(frame, text=player.name).grid(row=0, column=2, stick='ew')
-    highlight = False
+    highlightCurrentPlayerBead = False
     if currentPlayer.name == player.name:
-        highlight = True
-    Label(frame, image=getImageByColor(player.color, highlight)).grid(row=1, column=2, stick='ew')
+        highlightCurrentPlayerBead = True
+    Label(frame, image=getImageByColor(player.color, highlightCurrentPlayerBead)).grid(row=1, column=2, stick='ew')
 
     Label(frame, text='Jumps: ' + str(player.jumps)).grid(row=2, column=2, sticky='e')
     Label(frame, text='Points: ' + str(player.gamePoints)).grid(row=3, column=2, sticky='e')

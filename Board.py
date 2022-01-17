@@ -26,7 +26,7 @@ class Board:
         for y in range(19):
             self.board.append([])
             for x in range(19):
-                self.board[y].append({ 'bead': 'Open', 'highlight': False, 'weight': 0 })
+                self.board[y].append({ 'bead': 'Open', 'beadHighlight': False, 'weight': 0 })
 
 
     def playBead(self, x, y, color):
@@ -41,19 +41,19 @@ class Board:
         return self.board[y][x]['bead']
 
 
-    def getHighlight(self, x, y):
-        return self.board[y][x]['highlight']
+    def getBeadHighlight(self, x, y):
+        return self.board[y][x]['beadHighlight']
 
 
-    def setHighlight(self, x, y):
-        self.board[y][x]['highlight'] = True
+    def setBeadHighlight(self, x, y):
+        self.board[y][x]['beadHighlight'] = True
 
 
-    def clearHighlights(self, color):
+    def clearBeadHighlights(self, color):
         for y in range(19):
             for x in range(19):
                 if self.getBead(x, y) == color:
-                    self.board[y][x]["highlight"] = False
+                    self.board[y][x]["beadHighlight"] = False
 
 
     def isOpen(self, x, y):
@@ -102,7 +102,7 @@ class Board:
 
 
     def findAnnouncePatterns(self, color):
-        self.clearHighlights(color)
+        self.clearBeadHighlights(color)
         self.announcePatterns[color] = []
 
         patterns = []
@@ -126,8 +126,7 @@ class Board:
 
         for announcePattern in self.announcePatterns[color]:
             for position in announcePattern['positions']:
-                print('Highlighting ' + str(position['x']), str(position['y']))
-                self.setHighlight(position['x'], position['y'])
+                self.setBeadHighlight(position['x'], position['y'])
 
         return self.announcePatterns[color] != []
 
@@ -284,7 +283,7 @@ class Board:
                     s += '. '
                 else:
                     print(self.board[y][x])
-                    if self.getHighlight(x, y):
+                    if self.getBeadHighlight(x, y):
                         s += self.getBead(x, y)[0] + ' '
                     else:
                         s += self.getBead(x, y)[0].lower() + ' '
