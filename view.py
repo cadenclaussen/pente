@@ -165,7 +165,7 @@ def updateUx(match, board, players, currentPlayer):
                 beadHighlights.append(position)
                 x = position['x']
                 y = position['y']
-                label = Label(boardFrame, image=getBeadImage(x, y, player.color, True), borderwidth=0)
+                label = Label(boardFrame, image=getBeadImage(x, y, board.getBead(x, y), True), borderwidth=0)
                 label.grid(row=y, column=x, padx=0, pady=0)
 
     updateMatchDashboard()

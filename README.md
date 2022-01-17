@@ -1,5 +1,6 @@
 ## Features:
 
+- Add jumps to announces
 - Timer for moves
 - Provide move suggestions/hints
 - Enable player vs ai mode
