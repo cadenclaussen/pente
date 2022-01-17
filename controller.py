@@ -68,7 +68,8 @@ def playBead(x, y):
     if match.isGameWinner():
         currentPlayer.matchPoints += currentPlayer.gamePoints
         currentPlayer.gamePoints = 0
-        if currentPlayer.matchPoints > 8:
+        currentPlayer.jumps = 0
+        if currentPlayer.matchPoints > Match.MatchWin:
             match.matchWinner = True
 
 
@@ -85,6 +86,7 @@ def playBead(x, y):
     if match.isGameWinner():
         currentPlayer.matchPoints += currentPlayer.gamePoints
         currentPlayer.gamePoints = 0
+        currentPlayer.jumps = 0
         match.losingPlayer = currentPlayer
 
 

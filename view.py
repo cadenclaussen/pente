@@ -139,6 +139,13 @@ def playBead(e):
 def updateUx(match, board, players, currentPlayer):
     global boardFrame, player1Frame, matchFrame, player2Frame, highlights
 
+    # Clear the old highlights
+    for position in highlights:
+        x = position['x']
+        y = position['y']
+        label = Label(boardFrame, image=getBeadImage(x, y, board.getBead(x, y), False), borderwidth=0)
+        label.grid(row=y, column=x, padx=0, pady=0)
+
     # Remove any jumped beads
     for jumpPattern in board.jumpPatterns:
         for position in jumpPattern['positions']:
@@ -149,13 +156,6 @@ def updateUx(match, board, players, currentPlayer):
             label.bind('<Enter>', enter)
             label.bind('<Leave>', leave)
             label.bind('<Button-1>', playBead)
-
-    # Clear the old highlights
-    for position in highlights:
-        x = position['x']
-        y = position['y']
-        label = Label(boardFrame, image=getBeadImage(x, y, board.getBead(x, y), False), borderwidth=0)
-        label.grid(row=y, column=x, padx=0, pady=0)
 
     # Set the new higlights
     highlights = []

@@ -1,4 +1,6 @@
 class Match:
+    MatchWin = 33
+
     def __init__(self):
         self.gameCount = 0
         self.beadsPlayed = 0
