@@ -197,7 +197,10 @@ def updatePlayerDashboard(frame, player):
     global boardFrame, matchFrame, match, board, players, currentPlayer
 
     Label(frame, text=player.name).grid(row=0, column=2, stick='ew')
-    Label(frame, image=getImageByColor(player.color, False)).grid(row=1, column=2, stick='ew')
+    highlight = False
+    if currentPlayer.name == player.name:
+        highlight = True
+    Label(frame, image=getImageByColor(player.color, highlight)).grid(row=1, column=2, stick='ew')
 
     Label(frame, text='Jumps: ' + str(player.jumps)).grid(row=2, column=2, sticky='e')
     Label(frame, text='Points: ' + str(player.gamePoints)).grid(row=3, column=2, sticky='e')

@@ -138,11 +138,11 @@ class Board:
 
         patterns = []
         patterns.append({ 'name': 'Four', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
-        patterns.append({ 'name': 'Five', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
-        patterns.append({ 'name': 'Six', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
-        patterns.append({ 'name': 'Seven', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
-        patterns.append({ 'name': 'Eight', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
-        patterns.append({ 'name': 'Nine', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
+        # patterns.append({ 'name': 'Five', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
+        # patterns.append({ 'name': 'Six', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
+        # patterns.append({ 'name': 'Seven', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
+        # patterns.append({ 'name': 'Eight', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
+        # patterns.append({ 'name': 'Nine', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'bead', 'not-bead' ] })
 
         cumulativePatternsFound = []
         for pattern in patterns:
