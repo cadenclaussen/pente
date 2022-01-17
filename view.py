@@ -17,10 +17,9 @@ currentPlayer = None
 def main():
     global boardFrame, player1Frame, matchFrame, player2Frame, match, board, players, currentPlayer
 
-    # creating main tkinter window/toplevel
     root = Tk()
-    root.title("Pente")
-    root.geometry("590x775+20+20")
+    root.title('Pente')
+    root.geometry('590x775+20+20')
     root.resizable(False, False)
 
     headerFrame = Frame(root)
@@ -37,8 +36,8 @@ def main():
     matchFrame.grid(row=0, column=5, rowspan=7, columnspan=9, padx=30, pady=5)
     player2Frame.grid(row=0, column=14, rowspan=7, columnspan=5, padx=30, pady=5)
 
-    Label(headerFrame, text='Pente v0.1', font=("Helvetica", 40)).grid(row=0, column=0, sticky="ew")
-    Label(headerFrame, text='by Caden Claussen and Shane Claussen', font=("Helvetica", 8)).grid(row=1, column=0, sticky="nsew")
+    Label(headerFrame, text='Pente v0.1', font=('Helvetica', 40)).grid(row=0, column=0, sticky='ew')
+    Label(headerFrame, text='by Caden Claussen and Shane Claussen', font=('Helvetica', 8)).grid(row=1, column=0, sticky='nsew')
 
     newMatch()
 
@@ -47,14 +46,12 @@ def main():
 
 def newMatch():
     global match, board, players, currentPlayer
-    print("New Match")
     match, board, players, currentPlayer = controller.newMatch()
     newGame()
 
 
 def newGame():
     global match, board, players, currentPlayer, highlights
-    print("New Game")
     initializeBoard()
     match, board, players, currentPlayer = controller.newGame()
     highlights = []
@@ -71,9 +68,9 @@ def initializeBoard():
         for x in range(19):
             label = Label(boardFrame, image=getImage(x, y, False), borderwidth=0)
             label.grid(row=y, column=x, padx=0, pady=0)
-            label.bind("<Enter>", enter)
-            label.bind("<Leave>", leave)
-            label.bind("<Button-1>", playBead)
+            label.bind('<Enter>', enter)
+            label.bind('<Leave>', leave)
+            label.bind('<Button-1>', playBead)
 
 
 def enter(e):
@@ -131,9 +128,9 @@ def playBead(e):
         return
 
     e.widget.config(image=getBeadImage(x, y, currentPlayer.color, False))
-    e.widget.unbind("<Enter>")
-    e.widget.unbind("<Leave>")
-    e.widget.unbind("<Button-1>")
+    e.widget.unbind('<Enter>')
+    e.widget.unbind('<Leave>')
+    e.widget.unbind('<Button-1>')
 
     match, board, players, currentPlayer = controller.playBead(x, y)
     updateUx(match, board, players, currentPlayer)
@@ -144,19 +141,19 @@ def updateUx(match, board, players, currentPlayer):
 
     # Remove any jumped beads
     for jumpPattern in board.jumpPatterns:
-        for position in jumpPattern["positions"]:
-            x = position["x"]
-            y = position["y"]
+        for position in jumpPattern['positions']:
+            x = position['x']
+            y = position['y']
             label = Label(boardFrame, image=getImage(x, y, False), borderwidth=0)
             label.grid(row=y, column=x, padx=0, pady=0)
-            label.bind("<Enter>", enter)
-            label.bind("<Leave>", leave)
-            label.bind("<Button-1>", playBead)
+            label.bind('<Enter>', enter)
+            label.bind('<Leave>', leave)
+            label.bind('<Button-1>', playBead)
 
     # Clear the old highlights
     for position in highlights:
-        x = position["x"]
-        y = position["y"]
+        x = position['x']
+        y = position['y']
         label = Label(boardFrame, image=getBeadImage(x, y, board.getBead(x, y), False), borderwidth=0)
         label.grid(row=y, column=x, padx=0, pady=0)
 
@@ -171,7 +168,7 @@ def updateUx(match, board, players, currentPlayer):
                 label = Label(boardFrame, image=getBeadImage(x, y, player.color, True), borderwidth=0)
                 label.grid(row=y, column=x, padx=0, pady=0)
 
-    updateMatchDashboard(matchFrame, players)
+    updateMatchDashboard()
     updatePlayerDashboard(player1Frame, players[0])
     updatePlayerDashboard(player2Frame, players[1])
 
@@ -182,25 +179,28 @@ def updateUx(match, board, players, currentPlayer):
             newGame()
 
 
-def updateMatchDashboard(frame, players):
-    Label(frame, text="Match").grid(row=0, column=3, stick="n")
+def updateMatchDashboard():
+    global boardFrame, player1Frame, matchFrame, player2Frame, match, board, players, currentPlayer
 
-    Label(frame, image=getImageByColor(players[0].color, False)).grid(row=1, column=2, stick="ew")
-    Label(frame, text=players[0].matchPoints).grid(row=2, column=2, stick="ew")
+    Label(matchFrame, text='Match').grid(row=0, column=3, stick='n')
 
-    Label(frame, image=getImageByColor(players[1].color, False)).grid(row=1, column=4, stick="ew")
-    Label(frame, text=players[1].matchPoints).grid(row=2, column=4, stick="ew")
+    Label(matchFrame, text='Game: ' + str(match.gameCount)).grid(row=1, column=3, stick='ew')
+
+    Label(matchFrame, image=getImageByColor(players[0].color, False)).grid(row=2, column=2, stick='ew')
+    Label(matchFrame, text=players[0].matchPoints).grid(row=3, column=2, stick='ew')
+
+    Label(matchFrame, image=getImageByColor(players[1].color, False)).grid(row=2, column=4, stick='ew')
+    Label(matchFrame, text=players[1].matchPoints).grid(row=3, column=4, stick='ew')
 
 
 def updatePlayerDashboard(frame, player):
-    Label(frame, text=player.name).grid(row=0, column=2, stick="ew")
-    Label(frame, image=getImageByColor(player.color, False)).grid(row=1, column=2, stick="ew")
+    global boardFrame, matchFrame, match, board, players, currentPlayer
 
-    Label(frame, text="Jumps").grid(row=2, column=1, sticky="e")
-    Label(frame, text=player.jumps).grid(row=2, column=3, sticky="w")
+    Label(frame, text=player.name).grid(row=0, column=2, stick='ew')
+    Label(frame, image=getImageByColor(player.color, False)).grid(row=1, column=2, stick='ew')
 
-    Label(frame, text="Points").grid(row=3, column=1, sticky="e")
-    Label(frame, text=player.gamePoints).grid(row=3, column=3, sticky="w")
+    Label(frame, text='Jumps: ' + str(player.jumps)).grid(row=2, column=2, sticky='e')
+    Label(frame, text='Points: ' + str(player.gamePoints)).grid(row=3, column=2, sticky='e')
 
 
 main()
