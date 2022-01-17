@@ -65,6 +65,8 @@ def playBead(x, y):
 
     board.findAnnouncePatterns(currentPlayer.color)
 
+    board.findMovePatterns(currentPlayer.color)
+
     if match.isGameWinner():
         currentPlayer.matchPoints += currentPlayer.gamePoints
         currentPlayer.gamePoints = 0
@@ -82,6 +84,8 @@ def playBead(x, y):
         currentPlayer.gamePoints += len(board.pointPatterns[currentPlayer.color])
 
     board.findAnnouncePatterns(currentPlayer.color)
+
+    board.findMovePatterns(currentPlayer.color)
 
     if match.isGameWinner():
         currentPlayer.matchPoints += currentPlayer.gamePoints
@@ -124,6 +128,11 @@ def printPlayer(player):
         print('Announce patterns: ')
         for announcePattern in board.announcePatterns[player.color]:
             print('  ' + announcePattern['name'] + positions(announcePattern['positions']))
+
+    if board.movePatterns[player.color] != []:
+        print('Move patterns: ')
+        for movePattern in board.movePatterns[player.color]:
+            print('  ' + movePattern['name'] + positions(movePattern['positions']))
 
     print()
 
