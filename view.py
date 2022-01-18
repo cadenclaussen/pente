@@ -1,5 +1,5 @@
 from tkinter import *
-from lib.images import *
+from images import *
 import controller
 
 

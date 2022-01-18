@@ -1,5 +1,3 @@
-# points
-# highlight announces
 import random
 from Player import Player
 from Match import Match
@@ -64,8 +62,6 @@ def playBead(x, y):
         currentPlayer.gamePoints += len(board.pointPatterns[currentPlayer.color])
 
     board.findAnnouncePatterns(currentPlayer.color)
-
-    board.findMovePatterns(currentPlayer.color)
 
     if match.isGameWinner():
         currentPlayer.matchPoints += currentPlayer.gamePoints

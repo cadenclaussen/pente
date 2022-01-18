@@ -98,12 +98,12 @@ def __loadImages():
     global images
     images = {}
 
-    images['Blue'] = __load('lib/images/Blue.gif')
-    images['BlueHighlight'] = __load('lib/images/BlueHighlight.gif')
-    images['Red'] = __load('lib/images/Red.gif')
-    images['RedHighlight'] = __load('lib/images/RedHighlight.gif')
-    images['Green'] = __load('lib/images/Green.gif')
-    images['GreenHighlight'] = __load('lib/images/GreenHighlight.gif')
+    images['Blue'] = __load('images/Blue.gif')
+    images['BlueHighlight'] = __load('images/BlueHighlight.gif')
+    images['Red'] = __load('images/Red.gif')
+    images['RedHighlight'] = __load('images/RedHighlight.gif')
+    images['Green'] = __load('images/Green.gif')
+    images['GreenHighlight'] = __load('images/GreenHighlight.gif')
 
     types = [
         {
@@ -177,21 +177,17 @@ def __loadImageGroup(type, direction, rotation):
         if rotation is None:
             key = color + '_' + type["name"] + direction
             image = color + '_' + type["name"] + '.gif'
-            # print(key + ': ' + image)
-            images[key] = __load('lib/images/' + image)
+            images[key] = __load('images/' + image)
             key = color + '_' + type["name"] + direction + 'Highlight'
             image = color + '_' + type["name"] + 'Highlight.gif'
-            # print(key + ': ' + image)
-            images[key] = __load('lib/images/' + image)
+            images[key] = __load('images/' + image)
         else:
             key = color + '_' + type["name"] + direction
             image = color + '_' + type["name"] + '.gif'
-            # print(key + ': ' + image)
-            images[key] = __loadTransposed('lib/images/' + image, rotation)
+            images[key] = __loadTransposed('images/' + image, rotation)
             key = color + '_' + type["name"] + direction + 'Highlight'
             image = color + '_' + type["name"] + 'Highlight.gif'
-            # print(key + ': ' + image)
-            images[key] = __loadTransposed('lib/images/' + image, rotation)
+            images[key] = __loadTransposed('images/' + image, rotation)
 
 
 def __load(gif):
