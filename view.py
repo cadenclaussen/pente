@@ -69,8 +69,7 @@ def initializeBoard():
     # - Upper left is [0, 0], bottom right is [18, 18], middle is [9, 9]
     for y in range(19):
         for x in range(19):
-            label = Label(boardFrame, image=getImage(x, y, False), borderwidth=0)
-            label.grid(row=y, column=x, padx=0, pady=0)
+            label = Label(boardFrame, image=getOpenImage(x, y, False), borderwidth=0)
             label.bind('<Enter>', enter)
             label.bind('<Leave>', leave)
             label.bind('<Button-1>', playBead)
@@ -114,10 +113,10 @@ def leave(e):
 
     for position in moveHighlights:
         if x == position['x'] and y == position['y']:
-            e.widget.config(image=getImage(x, y, True))
+            e.widget.config(image=getOpenImageHighlighted(x, y))
             return
 
-    e.widget.config(image=getImage(x, y, False))
+    e.widget.config(image=getOpenImage(x, y))
 
 
 
@@ -163,7 +162,7 @@ def updateUx(match, board, players, currentPlayer):
         y = position['y']
         if x == lastPlayedBead['x'] and y == lastPlayedBead['y']:
             continue
-        label = Label(boardFrame, image=getImage(x, y, False), borderwidth=0)
+        label = Label(boardFrame, image=getOpenImage(x, y), borderwidth=0)
         label.grid(row=y, column=x, padx=0, pady=0)
         label.bind('<Enter>', enter)
         label.bind('<Leave>', leave)
@@ -174,7 +173,7 @@ def updateUx(match, board, players, currentPlayer):
         for position in jumpPattern['positions']:
             x = position['x']
             y = position['y']
-            label = Label(boardFrame, image=getImage(x, y, False), borderwidth=0)
+            label = Label(boardFrame, image=getOpenImage(x, y), borderwidth=0)
             label.grid(row=y, column=x, padx=0, pady=0)
             label.bind('<Enter>', enter)
             label.bind('<Leave>', leave)
@@ -199,7 +198,7 @@ def updateUx(match, board, players, currentPlayer):
                 moveHighlights.append(position)
                 x = position['x']
                 y = position['y']
-                label = Label(boardFrame, image=getImage(x, y, True), borderwidth=0)
+                label = Label(boardFrame, image=getOpenImageHighlighted(x, y), borderwidth=0)
                 label.grid(row=y, column=x, padx=0, pady=0)
                 label.bind('<Enter>', enter)
                 label.bind('<Leave>', leave)
