@@ -139,9 +139,8 @@ class Board:
                 cumulativePatternsFound += patternsFound
 
         patterns = []
-        patterns.append({ 'name': 'Jump', 'tokens': [ 'bead', 'opponent:s', 'opponent:s', 'open:s' ]})
-
-        patterns.append({ 'name': 'Jump', 'tokens': [ 'open:s', 'opponent:s', 'opponent:s', 'bead' ]})
+        patterns.append({ 'name': 'Jump', 'tokens': [ 'bead', 'opponent:s', 'opponent:s', 'open' ]})
+        patterns.append({ 'name': 'Jump', 'tokens': [ 'open', 'opponent:s', 'opponent:s', 'bead' ]})
         for pattern in patterns:
             patternsFound = self.findPattern(color, pattern)
             if patternsFound:

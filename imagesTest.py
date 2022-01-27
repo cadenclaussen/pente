@@ -37,7 +37,7 @@ for y in range(19):
 #     offset += 19
 #     for y in range(19):
 #         for x in range(19):
-#             label = Label(boardFrame, image=getBeadTileHighlight(x, y, color), borderwidth=0)
+#             label = Label(boardFrame, image=getBeadTileHighlighted(x, y, color), borderwidth=0)
 #             label.grid(row=(y + offset), column=x, padx=0, pady=0)
 
 

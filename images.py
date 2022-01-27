@@ -5,7 +5,7 @@ from PIL import ImageTk
 images = None
 
 
-def getTileByColor(color, highlight):
+def getBead(color, highlight):
     global images
     if images is None:
         images = loadTiles()
@@ -27,7 +27,7 @@ def getOpenTileDefense(x, y):
 def getBeadTile(x, y, color):
     return getTile(x, y, color, None)
 
-def getBeadTileHighlight(x, y, color):
+def getBeadTileHighlighted(x, y, color):
     return getTile(x, y, color, 'Highlighted')
 
 
@@ -112,11 +112,11 @@ def loadTiles():
     images = {}
 
     images['Blue'] = loadTile('Blue.gif', None)
-    images['BlueHighlight'] = loadTile('Blue_Highlighted.gif', None)
+    images['Blue_Highlighted'] = loadTile('Blue_Highlighted.gif', None)
     images['Red'] = loadTile('Red.gif', None)
-    images['RedHighlight'] = loadTile('Red_Highlighted.gif', None)
+    images['Red_Highlighted'] = loadTile('Red_Highlighted.gif', None)
     images['Green'] = loadTile('Green.gif', None)
-    images['GreenHighlight'] = loadTile('Green_Highlighted.gif', None)
+    images['Green_Highlighted'] = loadTile('Green_Highlighted.gif', None)
 
     tileGroups = [
         {
