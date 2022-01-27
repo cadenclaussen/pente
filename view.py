@@ -7,7 +7,7 @@ boardFrame = None
 player1 = None
 player2 = None
 announceHighlights = []
-moveHighlights = []
+offenseHighlights = []
 lastPlayedBead = None
 
 match = None
@@ -53,11 +53,11 @@ def newMatch():
 
 
 def newGame():
-    global match, board, players, currentPlayer, announceHighlights, moveHighlights
+    global match, board, players, currentPlayer, announceHighlights, offenseHighlights
     initializeBoard()
     match, board, players, currentPlayer = controller.newGame()
     announceHighlights = []
-    moveHighlights = []
+    offenseHighlights = []
     updateUx(match, board, players, currentPlayer)
 
 
@@ -108,14 +108,14 @@ def enter(e):
 # in the spot, the leave() function is responsible for setting the
 # spot back to the image that indicates the spot is empty.
 def leave(e):
-    global boardFrame, player1Frame, matchFrame, player2Frame, match, board, players, currentPlayer, moveHighlights
+    global boardFrame, player1Frame, matchFrame, player2Frame, match, board, players, currentPlayer, offenseHighlights
 
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
 
-    for position in moveHighlights:
+    for position in offenseHighlights:
         if x == position['x'] and y == position['y']:
-            e.widget.config(image=getOpenTileHighlighted(x, y))
+            e.widget.config(image=getOpenTileOffense(x, y))
             return
 
     e.widget.config(image=getOpenTile(x, y))
@@ -149,7 +149,7 @@ def playBead(e):
 
 
 def updateUx(match, board, players, currentPlayer):
-    global boardFrame, player1Frame, matchFrame, player2Frame, announceHighlights, moveHighlights, lastPlayedBead
+    global boardFrame, player1Frame, matchFrame, player2Frame, announceHighlights, offenseHighlights, lastPlayedBead
 
     # Clear the old announceHighlights
     for position in announceHighlights:
@@ -158,17 +158,17 @@ def updateUx(match, board, players, currentPlayer):
         label = Label(boardFrame, image=getBeadTile(x, y, board.getBead(x, y)), borderwidth=0)
         label.grid(row=y, column=x, padx=0, pady=0)
 
-    # # Clear the old moveHighlights
-    # for position in moveHighlights:
-    #     x = position['x']
-    #     y = position['y']
-    #     if x == lastPlayedBead['x'] and y == lastPlayedBead['y']:
-    #         continue
-    #     label = Label(boardFrame, image=getOpenTile(x, y), borderwidth=0)
-    #     label.grid(row=y, column=x, padx=0, pady=0)
-    #     label.bind('<Enter>', enter)
-    #     label.bind('<Leave>', leave)
-    #     label.bind('<Button-1>', playBead)
+    # Clear the old offenseHighlights
+    for position in offenseHighlights:
+        x = position['x']
+        y = position['y']
+        if x == lastPlayedBead['x'] and y == lastPlayedBead['y']:
+            continue
+        label = Label(boardFrame, image=getOpenTile(x, y), borderwidth=0)
+        label.grid(row=y, column=x, padx=0, pady=0)
+        label.bind('<Enter>', enter)
+        label.bind('<Leave>', leave)
+        label.bind('<Button-1>', playBead)
 
     # Remove any jumped beads
     for jumpPattern in board.jumpPatterns:
@@ -192,19 +192,19 @@ def updateUx(match, board, players, currentPlayer):
                 label = Label(boardFrame, image=getBeadTileHighlighted(x, y, board.getBead(x, y)), borderwidth=0)
                 label.grid(row=y, column=x, padx=0, pady=0)
 
-    # # Set the new moveHiglights
-    # moveHighlights = []
-    # for player in players:
-    #     for movePattern in board.movePatterns[player.color]:
-    #         for position in movePattern['positions']:
-    #             moveHighlights.append(position)
-    #             x = position['x']
-    #             y = position['y']
-    #             label = Label(boardFrame, image=getOpenTileOffense(x, y), borderwidth=0)
-    #             label.grid(row=y, column=x, padx=0, pady=0)
-    #             label.bind('<Enter>', enter)
-    #             label.bind('<Leave>', leave)
-    #             label.bind('<Button-1>', playBead)
+    # Set the new moveHiglights
+    offenseHighlights = []
+    for player in players:
+        for offensePattern in board.offensePatterns[player.color]:
+            for position in offensePattern['positions']:
+                offenseHighlights.append(position)
+                x = position['x']
+                y = position['y']
+                label = Label(boardFrame, image=getOpenTileOffense(x, y), borderwidth=0)
+                label.grid(row=y, column=x, padx=0, pady=0)
+                label.bind('<Enter>', enter)
+                label.bind('<Leave>', leave)
+                label.bind('<Button-1>', playBead)
 
     updateMatchDashboard()
     updatePlayerDashboard(player1Frame, players[0])
