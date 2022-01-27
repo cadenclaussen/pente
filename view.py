@@ -8,6 +8,7 @@ player1 = None
 player2 = None
 announceHighlights = []
 offenseHighlights = []
+defenseHighlights = []
 lastPlayedBead = None
 
 match = None
@@ -53,11 +54,12 @@ def newMatch():
 
 
 def newGame():
-    global match, board, players, currentPlayer, announceHighlights, offenseHighlights
+    global match, board, players, currentPlayer, announceHighlights, offenseHighlights, defenseHighlights
     initializeBoard()
     match, board, players, currentPlayer = controller.newGame()
     announceHighlights = []
     offenseHighlights = []
+    defenseHighlights = []
     updateUx(match, board, players, currentPlayer)
 
 
@@ -108,7 +110,7 @@ def enter(e):
 # in the spot, the leave() function is responsible for setting the
 # spot back to the image that indicates the spot is empty.
 def leave(e):
-    global boardFrame, player1Frame, matchFrame, player2Frame, match, board, players, currentPlayer, offenseHighlights
+    global boardFrame, player1Frame, matchFrame, player2Frame, match, board, players, currentPlayer, offenseHighlights, defenseHighlights
 
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
@@ -116,6 +118,11 @@ def leave(e):
     for position in offenseHighlights:
         if x == position['x'] and y == position['y']:
             e.widget.config(image=getOpenTileOffense(x, y))
+            return
+
+    for position in defenseHighlights:
+        if x == position['x'] and y == position['y']:
+            e.widget.config(image=getOpenTileDefense(x, y))
             return
 
     e.widget.config(image=getOpenTile(x, y))
@@ -149,7 +156,7 @@ def playBead(e):
 
 
 def updateUx(match, board, players, currentPlayer):
-    global boardFrame, player1Frame, matchFrame, player2Frame, announceHighlights, offenseHighlights, lastPlayedBead
+    global boardFrame, player1Frame, matchFrame, player2Frame, announceHighlights, offenseHighlights, defenseHighlights, lastPlayedBead
 
     # Clear the old announceHighlights
     for position in announceHighlights:
@@ -160,6 +167,18 @@ def updateUx(match, board, players, currentPlayer):
 
     # Clear the old offenseHighlights
     for position in offenseHighlights:
+        x = position['x']
+        y = position['y']
+        if x == lastPlayedBead['x'] and y == lastPlayedBead['y']:
+            continue
+        label = Label(boardFrame, image=getOpenTile(x, y), borderwidth=0)
+        label.grid(row=y, column=x, padx=0, pady=0)
+        label.bind('<Enter>', enter)
+        label.bind('<Leave>', leave)
+        label.bind('<Button-1>', playBead)
+
+    # Clear the old defenseHighlights
+    for position in defenseHighlights:
         x = position['x']
         y = position['y']
         if x == lastPlayedBead['x'] and y == lastPlayedBead['y']:
@@ -191,6 +210,20 @@ def updateUx(match, board, players, currentPlayer):
                 y = position['y']
                 label = Label(boardFrame, image=getBeadTileHighlighted(x, y, board.getBead(x, y)), borderwidth=0)
                 label.grid(row=y, column=x, padx=0, pady=0)
+
+    # Set the new moveHiglights
+    defenseHighlights = []
+    for player in players:
+        for defensePattern in board.defensePatterns[player.color]:
+            for position in defensePattern['positions']:
+                defenseHighlights.append(position)
+                x = position['x']
+                y = position['y']
+                label = Label(boardFrame, image=getOpenTileDefense(x, y), borderwidth=0)
+                label.grid(row=y, column=x, padx=0, pady=0)
+                label.bind('<Enter>', enter)
+                label.bind('<Leave>', leave)
+                label.bind('<Button-1>', playBead)
 
     # Set the new moveHiglights
     offenseHighlights = []

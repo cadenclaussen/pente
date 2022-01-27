@@ -19,17 +19,19 @@ class Board:
 
         self.announcePatterns = {}
         self.offensePatterns = {}
+        self.defensePatterns = {}
         self.pointPatterns = {}
         for player in players:
             self.announcePatterns[player.color] = []
             self.offensePatterns[player.color] = []
+            self.defensePatterns[player.color] = []
             self.pointPatterns[player.color] = []
 
         self.board = []
         for y in range(19):
             self.board.append([])
             for x in range(19):
-                self.board[y].append({ 'bead': 'Open', 'beadHighlight': False, 'moveHighlight': False, 'weight': 0 })
+                self.board[y].append({ 'bead': 'Open', 'beadHighlight': False, 'offenseHighlight': False, 'defenseHighlight': False, 'weight': 0 })
 
 
     def playBead(self, x, y, color):
@@ -59,19 +61,34 @@ class Board:
                     self.board[y][x]['beadHighlight'] = False
 
 
-    def getMoveHighlight(self, x, y):
-        return self.board[y][x]['moveHighlight']
+    def getOffenseHighlight(self, x, y):
+        return self.board[y][x]['offenseHighlight']
 
 
-    def setMoveHighlight(self, x, y):
-        self.board[y][x]['moveHighlight'] = True
+    def setOffenseHighlight(self, x, y):
+        self.board[y][x]['offenseHighlight'] = True
 
 
-    def clearMoveHighlights(self, color):
+    def clearOffenseHighlights(self, color):
         for y in range(19):
             for x in range(19):
                 if self.getBead(x, y) == color:
-                    self.board[y][x]['moveHighlight'] = False
+                    self.board[y][x]['offenseHighlight'] = False
+
+
+    def getDefenseHighlight(self, x, y):
+        return self.board[y][x]['defenseHighlight']
+
+
+    def setDefenseHighlight(self, x, y):
+        self.board[y][x]['defenseHighlight'] = True
+
+
+    def clearDefenseHighlights(self, color):
+        for y in range(19):
+            for x in range(19):
+                if self.getBead(x, y) == color:
+                    self.board[y][x]['defenseHighlight'] = False
 
 
     def isOpen(self, x, y):
@@ -195,38 +212,51 @@ class Board:
 
     def findOffensePatterns(self, color):
         for player in self.players:
-            self.clearMoveHighlights(player.color)
+            self.clearOffenseHighlights(player.color)
             self.offensePatterns[player.color] = []
 
-        patterns = []
-
-        # Defensive
-        # patterns.append({ 'name': 'Open Three', 'tokens': [ 'not-bead', 'open:s', 'bead', 'bead', 'bead', 'open:s', 'not-bead' ] })
-        # patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open:s', 'bead', 'open', 'bead', 'bead', 'open:s', 'not-bead' ] })
-        # patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open:s', 'bead', 'bead', 'open', 'bead', 'open:s', 'not-bead' ] })
-        # patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open:s', 'bead', 'bead', 'bead', 'bead', 'closed' ] })
-        # patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead', 'bead', 'bead', 'bead', 'open:s', 'not-bead' ] })
-        # patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open:s', 'bead', 'bead', 'bead', 'bead', 'open:s', 'not-bead' ] })
-        # patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'bead', 'open:s', 'bead', 'bead', 'bead', 'not-bead' ] })
-        # patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'bead', 'bead', 'open:s', 'bead', 'bead', 'not-bead' ] })
-        # patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'bead', 'bead', 'bead', 'open:s', 'bead', 'not-bead' ] })
-
         # Offense
+        patterns = []
+        patterns.append({ 'name': 'Jump Potential', 'tokens': [ 'open:s', 'opponent', 'opponent', 'open:s' ]})
         patterns.append({ 'name': 'Jump', 'tokens': [ 'bead', 'opponent', 'opponent', 'open:s' ]})
         patterns.append({ 'name': 'Jump', 'tokens': [ 'open:s', 'opponent', 'opponent', 'bead' ]})
-        patterns.append({ 'name': 'Potential Holed Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'closed', 'open:s', 'bead', 'bead', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'closed', 'bead', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'closed', 'bead', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'closed', 'bead', 'bead', 'bead', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'bead', 'open:s', 'closed' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Potential Closed Four', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'bead', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Potential Open Three', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Potential Open Three', 'tokens': [ 'open', 'open:s', 'bead', 'bead', 'open:s', 'open' ]})
-        patterns.append({ 'name': 'Potential Jump', 'tokens': [ 'open:s', 'opponent', 'opponent', 'open' ]})
-        patterns.append({ 'name': 'Potential Jump', 'tokens': [ 'open', 'opponent', 'opponent', 'open:s' ]})
+
+        patterns.append({ 'name': 'Open Three Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'open:s', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Three Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Three', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Three', 'tokens': [ 'open', 'open:s', 'bead', 'bead', 'open:s', 'open' ]})
+
+        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'open:s', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'open:s', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
+
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'bead', 'bead', 'open:s', 'open:s', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'bead', 'open:s', 'bead', 'open:s', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'bead', 'open:s', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'open:s', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'open:s', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'open:s', 'bead', 'bead', 'open:s', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'open:s', 'bead', 'bead', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'open:s', 'bead', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'open:s', 'bead', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'open:s', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'open:s', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'bead', 'open:s', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'open:s', 'bead', 'bead', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead', 'bead', 'bead', 'open:s', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'bead', 'open:s', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'bead', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'bead', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'bead', 'bead', 'closed' ] })
+
+        patterns.append({ 'name': 'Holed Open Four Potential ', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'open:s', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
+        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
 
         cumulativePatternsFound = []
         for pattern in patterns:
@@ -238,9 +268,42 @@ class Board:
 
         for offensePattern in self.offensePatterns[color]:
             for position in offensePattern['positions']:
-                self.setMoveHighlight(position['x'], position['y'])
+                self.setOffenseHighlight(position['x'], position['y'])
 
         return self.offensePatterns[color] != []
+
+
+    def findDefensePatterns(self, color):
+        for player in self.players:
+            self.clearDefenseHighlights(player.color)
+            self.defensePatterns[player.color] = []
+
+        # Defense
+        patterns = []
+        patterns.append({ 'name': 'Open Three', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
+        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'open:s', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
+        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'open:s', 'opponent', 'open:s', 'not-bead' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'opponent', 'opponent', 'closed' ] })
+        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'opponent', 'opponent', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
+        patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
+        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'opponent', 'open:s', 'opponent', 'opponent', 'opponent', 'not-bead' ] })
+        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'opponent', 'opponent', 'open:s', 'opponent', 'opponent', 'not-bead' ] })
+        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'opponent', 'opponent', 'opponent', 'open:s', 'opponent', 'not-bead' ] })
+
+        cumulativePatternsFound = []
+        for pattern in patterns:
+            patternsFound = self.findPattern(color, pattern)
+            if patternsFound:
+                cumulativePatternsFound += patternsFound
+
+        self.defensePatterns[color] = cumulativePatternsFound
+        print(self.defensePatterns[color])
+
+        for defensePattern in self.defensePatterns[color]:
+            for position in defensePattern['positions']:
+                self.setDefenseHighlight(position['x'], position['y'])
+
+        return self.defensePatterns[color] != []
 
 
     def findPattern(self, color, pattern):
