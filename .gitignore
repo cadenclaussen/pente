@@ -1,4 +1,6 @@
 .DS_Store
+foo*
+TAGS
 .#*
 # Byte-compiled / optimized / DLL files
 foo.py

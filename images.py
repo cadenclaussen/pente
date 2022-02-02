@@ -15,19 +15,19 @@ def getBead(color, highlight):
     return images[color + tileSuffix]
 
 
-def getOpenTile(x, y):
+def getOpenImage(x, y):
     return getTile(x, y, 'Open', None)
 
-def getOpenTileOffense(x, y):
+def getOpenImageOffense(x, y):
     return getTile(x, y, 'Open', 'Offense')
 
-def getOpenTileDefense(x, y):
+def getOpenImageDefense(x, y):
     return getTile(x, y, 'Open', 'Defense')
 
-def getBeadTile(x, y, color):
+def getBeadImage(x, y, color):
     return getTile(x, y, color, None)
 
-def getBeadTileHighlighted(x, y, color):
+def getHighlightedBeadImage(x, y, color):
     return getTile(x, y, color, 'Highlighted')
 
 

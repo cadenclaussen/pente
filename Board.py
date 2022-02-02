@@ -18,13 +18,13 @@ class Board:
     hint = {}
 
 
-    def __init__(self, players):
+    def __init__(self, colors):
 
         # Load the patterns in from patterns.txt
         self.patterns = self.loadPatternDefinitions()
 
-        # Save the players
-        self.players = players
+        # Save the colors
+        self.colors = colors
 
         # Initialize each of the 19x19 positions on the board
         self.board = []
@@ -39,7 +39,7 @@ class Board:
                 })
 
         # Initialize all the board metadata
-        self.findAllPatternsAllPositionsAllDirections(players[0].color, players[1].color, { 'x': 9, 'y': 9 })
+        self.analyze(colors[0], colors[1], { 'x': 9, 'y': 9 })
 
 
     #--------------------------------------------------------------------------
@@ -100,22 +100,23 @@ class Board:
     #--------------------------------------------------------------------------
     # Jumps
     #--------------------------------------------------------------------------
-    def clearJumps(self):
-        self.jumps = []
+    def clearOpponentJumps(self):
+        self.opponentJumps = []
 
 
-    def addJump(self, position):
-        self.jumps.append(position)
+    def addOpponentJump(self, position):
+        print('Adding jump: ' + str(position))
+        self.opponentJumps.append(position)
 
 
-    def getJumps(self):
-        return self.jumps
+    def getOpponentJumps(self):
+        return self.opponentJumps
 
 
-    def printJumps(self):
+    def printOpponentJumps(self):
         print()
-        print('Jumps:')
-        for position in self.jumps:
+        print('Opponent Jumps:')
+        for position in self.opponentJumps:
             print('  ' + str(position))
 
 
@@ -124,8 +125,8 @@ class Board:
     # Points
     #--------------------------------------------------------------------------
     def clearPoints(self):
-        for player in self.players:
-            self.points[player.color] = 0
+        for color in self.colors:
+            self.points[color] = 0
 
     def addPoints(self, color, points):
         self.points[color] += points
@@ -138,8 +139,8 @@ class Board:
     # Winner
     #--------------------------------------------------------------------------
     def clearWinner(self):
-        for player in self.players:
-            self.winner[player.color] = False
+        for color in self.colors:
+            self.winner[color] = False
 
     def setWinner(self, color):
         self.winner[color] = True
@@ -191,8 +192,8 @@ class Board:
         self.setHint({ 'x': 9, 'y': 9, 'weight': 0 })
 
 
-    def findAllPatternsAllPositionsAllDirections(self, color, opponentColor, opponentLastMove):
-        self.clearJumps()
+    def analyze(self, color, opponentColor, opponentLastMove):
+        self.clearOpponentJumps()
         self.clearHighlights()
         self.clearMoves()
         self.clearWinner()
@@ -221,7 +222,7 @@ class Board:
             for position in positions:
 
                 if category == 'OpponentJump':
-                    self.addJump(position)
+                    self.addOpponentJump(position)
                     self.removeBead(position['x'], position['y'])
 
                 elif category in [ 'OpponentWin', 'OpponentPoint', 'OpponentAnnounce', 'Point', 'Announce' ]:
@@ -236,13 +237,13 @@ class Board:
                 elif category in [ 'Defense', 'Offense' ]:
                     self.addMove(position)
 
-        for player in [ { 'color': color, 'positions': pointPositions }, { 'color': opponentColor, 'positions': opponentPointPositions } ]:
+        for color in [ { 'color': color, 'positions': pointPositions }, { 'color': opponentColor, 'positions': opponentPointPositions } ]:
             firstFiveOrMore = True
-            for name in player['positions'].values():
+            for name in color['positions'].values():
                 if name != '4' and firstFiveOrMore:
                     firstFiveOrMore = False
                 else:
-                    self.addPoints(player['color'], 1)
+                    self.addPoints(color['color'], 1)
 
 
     def findOnePatternAllPositionsAllDirections(self, pattern, color, opponentColor, opponentLastMove):

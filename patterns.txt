@@ -1,4 +1,4 @@
-OpponentJump            J    o P P o                    T  0
+OpponentJump            J    o P P o                    F  0
 
 OpponentWin             5    0 O O O O O 0              T  0
 OpponentWin             6    0 O O O O O O 0            T  0
