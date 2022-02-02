@@ -4,24 +4,59 @@ from Player import Player
 from Match import Match
 
 
+def testAll():
+    tc('testAll')
+    match, board, players, currentPlayer = init()
+    generateRandomBoard(board, players, 150)
+    print(board)
+    board.findAllPatternsAllPositionsAllDirections('Blue', 'Red', { 'x': 8, 'y': 8 })
+    printMetadata( [ 'OpponentWin', 'OpponentPoint', 'OpponentAnnounce', 'Point', 'Announce' ], board)
+    print(board)
+
 def testBoard():
     tc('testBoard')
     match, board, players, currentPlayer = init()
     print(board)
+    board.findAllPatternsAllPositionsAllDirections('Blue', 'Red', { 'x': 8, 'y': 8 })
+    print(board)
+    printMetadata([], board)
+    board.printMoves()
 
 
 def testWinningPatterns():
     tc('testWinningPatterns')
     match, board, players, currentPlayer = init()
-    generateBeadSequence(board, 0, 0, Board.South, 9)
-    generateBeadSequence(board, 18, 0, Board.South, 9)
-    generateBeadSequence(board, 0, 18, Board.East, 6)
-    generateBeadSequence(board, 2, 2, Board.Southeast, 8)
-    generateBeadSequence(board, 9, 9, Board.East, 7)
-    generateBeadSequence(board, 9, 9, Board.South, 5)
-    generateBeadSequence(board, 4, 4, Board.East, 3)
-    generateBeadSequence(board, 6, 6, Board.East, 4)
-    printWinningPatterns(board, players, currentPlayer)
+    generateBeadSequence(board, 0, 0, Board.South, 9, 'Blue')
+    generateBeadSequence(board, 16, 0, Board.South, 9, 'Blue')
+    generateBeadSequence(board, 18, 0, Board.South, 9, 'Blue')
+    generateBeadSequence(board, 0, 18, Board.East, 6, 'Blue')
+    generateBeadSequence(board, 2, 2, Board.Southeast, 8, 'Blue')
+    generateBeadSequence(board, 9, 9, Board.East, 7, 'Blue')
+    generateBeadSequence(board, 9, 9, Board.South, 5, 'Blue')
+    generateBeadSequence(board, 4, 4, Board.East, 3, 'Blue')
+    generateBeadSequence(board, 6, 6, Board.East, 4, 'Blue')
+    board.findAllPatternsAllPositionsAllDirections('Red', 'Blue', { 'x': 8, 'y': 8 })
+    print(board)
+    printMetadata([ 'OpponentWin' ], board)
+
+
+def testPointPatterns():
+    tc('testPointPatterns')
+    match, board, players, currentPlayer = init()
+    generateRandomBoard(board, players, 150)
+    board.findAllPatternsAllPositionsAllDirections('Red', 'Blue', { 'x': 8, 'y': 8 })
+    print(board)
+    printMetadata([ 'Point', 'OpponentPoint' ], board)
+
+
+def testAnnouncePatterns():
+    tc('testAnnouncePatterns')
+    match, board, players, currentPlayer = init()
+    generateRandomBoard(board, players, 150)
+    board.findAllPatternsAllPositionsAllDirections('Red', 'Blue', { 'x': 8, 'y': 8 })
+    print(board)
+    board.printHighlights
+    printMetadata([ 'Announce', 'OpponentAnnounce' ], board)
 
 
 def testJumpPatterns():
@@ -35,91 +70,32 @@ def testJumpPatterns():
     generateJumpPattern(board, 9, 9, Board.Southwest)
     generateJumpPattern(board, 9, 9, Board.West)
     generateJumpPattern(board, 9, 9, Board.Northwest)
-    printJumpPatterns(board, 9, 9, players, currentPlayer)
-
-
-def testAnnouncePatterns():
-    tc('testAnnouncePatterns')
-    match, board, players, currentPlayer = init()
-    generateRandomBoard(board, players, 150)
-    printAnnouncePatterns(board, players, currentPlayer.color)
+    board.findAllPatternsAllPositionsAllDirections('Red', 'Blue', { 'x': 9, 'y': 9 })
+    print(board)
+    printMetadata([], board)
 
 
 def testMovePatterns():
     tc('testMovePatterns')
     match, board, players, currentPlayer = init()
     generateRandomBoard(board, players, 150)
-    printMovePatterns(board, players, currentPlayer.color)
-
-
-def testPointPatterns():
-    print()
-    print('testPointPatterns')
-    print()
-    match, board, players, currentPlayer = init()
-    generateRandomBoard(board, players, 150)
-    printPointPatterns(board, players, currentPlayer.color)
-
-
-def printWinningPatterns(board, players, currentPlayer):
-    print()
+    board.findAllPatternsAllPositionsAllDirections('Red', 'Blue', { 'x': 9, 'y': 9 })
     print(board)
-    print()
-    print('Winning Patterns')
-    # board.findPattern('Blue', { 'name': 'Nine', 'tokens': [ 'not-bead', 'bead:save', 'bead:save', 'bead:save', 'bead:save', 'bead:save', 'bead:save', 'bead:save', 'bead:save', 'bead:save', 'not-bead' ] }, None)
-    board.findWinningPatterns(currentPlayer.color)
-    for winningPattern in board.winningPatterns:
-        print(winningPattern['name'] + positions(winningPattern['positions']))
+    printMetadata([], board)
+    board.printMoves()
 
 
-def printJumpPatterns(board, x, y, players, currentPlayer):
+def printMetadata(highlights, board):
+    for highlight in highlights:
+        board.printHighlights(highlight)
     print()
-    board.findJumpPatterns(x, y, currentPlayer.color)
-    print()
-    print(board)
-    print()
-    print('Jump Patterns')
-    for jumpPattern in board.jumpPatterns:
-        print(positions(jumpPattern['positions']))
-
-
-def printAnnouncePatterns(board, players, currentPlayer):
-    print()
-    print(board)
-    print()
-    print('Announce Patterns')
-    board.findAnnouncePatterns(players[0].color)
-    for announcePattern in board.announcePatterns[players[0].color]:
-        print(players[0].color + ': ' + announcePattern['name'] + positions(announcePattern['positions']))
-    board.findAnnouncePatterns(players[1].color)
-    for announcePattern in board.announcePatterns[players[1].color]:
-        print(players[1].color + ': ' + announcePattern['name'] + positions(announcePattern['positions']))
-
-
-def printMovePatterns(board, players, currentPlayer):
-    print()
-    print(board)
-    print()
-    print('Move Patterns')
-    board.findMovePatterns(players[0].color)
-    for movePattern in board.movePatterns[players[0].color]:
-        print(players[0].color + ': ' + movePattern['name'] + positions(movePattern['positions']))
-    board.findMovePatterns(players[1].color)
-    for movePattern in board.movePatterns[players[1].color]:
-        print(players[1].color + ': ' + movePattern['name'] + positions(movePattern['positions']))
-
-
-def printPointPatterns(board, players, currentPlayer):
-    print()
-    print(board)
-    print()
-    print('Point Patterns')
-    board.findPointPatterns(players[0].color)
-    for pointPattern in board.pointPatterns[players[0].color]:
-        print(players[0].color + ': ' + pointPattern['name'] + positions(pointPattern['positions']))
-    board.findPointPatterns(players[1].color)
-    for pointPattern in board.pointPatterns[players[1].color]:
-        print(players[1].color + ': ' + pointPattern['name'] + positions(pointPattern['positions']))
+    # print('highlights: ' + str(board.getHighlights()))
+    print('jumps: ' + str(board.getJumps()))
+    print('points[Blue]: ' + str(board.getPoints('Blue')))
+    print('points[Red]: ' + str(board.getPoints('Red')))
+    print('winner[Blue]: ' + str(board.getWinner('Blue')))
+    print('winner[Red]: ' + str(board.getWinner('Red')))
+    print('hint: ' + str(board.getHint()))
 
 
 def positions(positions):
@@ -142,16 +118,16 @@ def tc(name):
     print()
 
 
-def generateBeadSequence(board, x, y, direction, count):
+def generateBeadSequence(board, x, y, direction, count, color):
     for i in range(count):
-        board.playBead(x + direction['xOffset'] * i, y + direction['yOffset'] * i, 'Blue')
+        board.addBead(x + direction['xOffset'] * i, y + direction['yOffset'] * i, color)
 
 
 def generateJumpPattern(board, x, y, direction):
-    board.playBead(x, y, 'Blue')
-    board.playBead(x + direction['xOffset'], y + direction['yOffset'], 'Red')
-    board.playBead(x + (2 * direction['xOffset']), y + (2 * direction['yOffset']), 'Red')
-    board.playBead(x + (3 * direction['xOffset']), y + (3 * direction['yOffset']), 'Blue')
+    board.addBead(x, y, 'Blue')
+    board.addBead(x + direction['xOffset'], y + direction['yOffset'], 'Red')
+    board.addBead(x + (2 * direction['xOffset']), y + (2 * direction['yOffset']), 'Red')
+    board.addBead(x + (3 * direction['xOffset']), y + (3 * direction['yOffset']), 'Blue')
 
 
 def generateRandomBoard(board, players, numberOfTurns):
@@ -162,16 +138,20 @@ def generateRandomBoard(board, players, numberOfTurns):
             y = random.randint(0, 18)
             if board.isOpen(x, y):
                 break
-        board.playBead(x, y, currentPlayer.color)
+        board.addBead(x, y, currentPlayer.color)
         if currentPlayer.key == 0:
             currentPlayer = players[1]
         else:
             currentPlayer = players[0]
 
 
-# testBoard()
+def xy(x, y):
+    return '{0:>2} {1:>2}'.format(x, y) + ': '
+
+
+# testAll()
 # testWinningPatterns()
-# testJumpPatterns()
-# testAnnouncePatterns()
-testMovePatterns()
 # testPointPatterns()
+# testAnnouncePatterns()
+# testJumpPatterns()
+testMovePatterns()

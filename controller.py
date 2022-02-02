@@ -33,62 +33,37 @@ def newGame():
 def playBead(x, y):
     global match, board, players, currentPlayer
 
-    # Algorithm upon placing a bead:
-    # - Put the bead on the board object
-    # - Jumps: If the move result in jump(s), save them, adjust game points, and set game winner if > 5
-    # - Winning Patterns: If the move resulted in winning pattern(s), adjust game points and set game winner
-    # - Point Patterns: Find all point patterns as a result of the move, adjust points
-    # - Announce Patterns: Find all announce patterns as a result of the move, save them
-    # - Match Win: If there was a game win, determine if it caused a match win, if so set match winner
-    #
-    # - Change to the next player
-    # - Point Patterns: Find all point patterns as a result of the move, adjust points
-    # - Announce Patterns: Find all announce patterns as a result of the move, save them
-    board.playBead(x, y, currentPlayer.color)
+    board.addBead(x, y, currentPlayer.color)
+    opponentPlayer = currentPlayer
     match.beadsPlayed += 1
-
-    currentPlayer.gamePoints = 0
-    if board.findJumpPatterns(x, y, currentPlayer.color):
-        currentPlayer.jumps += len(board.jumpPatterns)
-        if currentPlayer.jumps >= 5:
-            match.gameWinner = True
-    currentPlayer.gamePoints += currentPlayer.jumps
-
-    if board.findWinningPatterns(currentPlayer.color):
-        currentPlayer.gamePoints += 5
-        match.gameWinner = True
-
-    if board.findPointPatterns(currentPlayer.color):
-        currentPlayer.gamePoints += len(board.pointPatterns[currentPlayer.color])
-
-    board.findAnnouncePatterns(currentPlayer.color)
-
-    if match.isGameWinner():
-        currentPlayer.matchPoints += currentPlayer.gamePoints
-        currentPlayer.gamePoints = 0
-        currentPlayer.jumps = 0
-        if currentPlayer.matchPoints > Match.MatchWin:
-            match.matchWinner = True
-
-
     nextPlayer()
 
+    board.findAllPatternsAllPositionsAllDirections(currentPlayer, currentPlayer.color, opponentPlayer.color, { 'x': x, 'y': y })
 
-    currentPlayer.gamePoints = 0
-    currentPlayer.gamePoints += currentPlayer.jumps
-    if board.findPointPatterns(currentPlayer.color):
-        currentPlayer.gamePoints += len(board.pointPatterns[currentPlayer.color])
+    p(opponentPlayer)
+    p(currentPlayer)
 
-    board.findAnnouncePatterns(currentPlayer.color)
+    for player in [ opponentPlayer, currentPlayer ]:
 
-    board.findOffensePatterns(currentPlayer.color)
-    board.findDefensePatterns(currentPlayer.color)
+        player.gamePoints = 0
 
-    if match.isGameWinner():
-        currentPlayer.matchPoints += currentPlayer.gamePoints
-        currentPlayer.gamePoints = 0
-        currentPlayer.jumps = 0
-        match.losingPlayer = currentPlayer
+        if len(board.jumps) > 0:
+            player.jumps += len(board.jumps)
+            player.gamePoints += player.jumps
+            if player.jumps >= 5:
+                match.gameWinner = True
+
+        if board.winner[player.color]:
+            player.gamePoints += 5
+            match.gameWinner = True
+
+        if match.isGameWinner():
+            player.matchPoints += player.gamePoints
+            player.gamePoints = 0
+            player.jumps = 0
+            if player.matchPoints > Match.MatchWin:
+                match.matchWinner = True
+
 
 
     printDebug()

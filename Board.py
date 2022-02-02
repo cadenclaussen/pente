@@ -11,30 +11,41 @@ class Board:
     North = { 'name': 'north', 'yOffset': -1, 'xOffset': 0 }
     Northeast = { 'name': 'northeast', 'yOffset': -1, 'xOffset': 1 }
 
+    highlights = []
+    jumps = []
+    points = {}
+    winner = {}
+    hint = {}
+
 
     def __init__(self, players):
-        self.jumpPatterns = []
-        self.winningPatterns = []
+
+        # Load the patterns in from patterns.txt
+        self.patterns = self.loadPatternDefinitions()
+
+        # Save the players
         self.players = players
 
-        self.announcePatterns = {}
-        self.offensePatterns = {}
-        self.defensePatterns = {}
-        self.pointPatterns = {}
-        for player in players:
-            self.announcePatterns[player.color] = []
-            self.offensePatterns[player.color] = []
-            self.defensePatterns[player.color] = []
-            self.pointPatterns[player.color] = []
-
+        # Initialize each of the 19x19 positions on the board
         self.board = []
         for y in range(19):
             self.board.append([])
             for x in range(19):
-                self.board[y].append({ 'bead': 'Open', 'beadHighlight': False, 'offenseHighlight': False, 'defenseHighlight': False, 'weight': 0 })
+                self.board[y].append({
+                    'bead': 'Open',
+                    'highlight': False,
+                    'moves': [],
+                    'weight': 0
+                })
+
+        # Initialize all the board metadata
+        self.findAllPatternsAllPositionsAllDirections(players[0].color, players[1].color, { 'x': 9, 'y': 9 })
 
 
-    def playBead(self, x, y, color):
+    #--------------------------------------------------------------------------
+    # Beads
+    #--------------------------------------------------------------------------
+    def addBead(self, x, y, color):
         self.board[y][x]['bead'] = color
 
 
@@ -46,320 +57,233 @@ class Board:
         return self.board[y][x]['bead']
 
 
-    def getBeadHighlight(self, x, y):
-        return self.board[y][x]['beadHighlight']
-
-
-    def setBeadHighlight(self, x, y):
-        self.board[y][x]['beadHighlight'] = True
-
-
-    def clearBeadHighlights(self, color):
-        for y in range(19):
-            for x in range(19):
-                if self.getBead(x, y) == color:
-                    self.board[y][x]['beadHighlight'] = False
-
-
-    def getOffenseHighlight(self, x, y):
-        return self.board[y][x]['offenseHighlight']
-
-
-    def setOffenseHighlight(self, x, y):
-        self.board[y][x]['offenseHighlight'] = True
-
-
-    def clearOffenseHighlights(self, color):
-        for y in range(19):
-            for x in range(19):
-                if self.getBead(x, y) == color:
-                    self.board[y][x]['offenseHighlight'] = False
-
-
-    def getDefenseHighlight(self, x, y):
-        return self.board[y][x]['defenseHighlight']
-
-
-    def setDefenseHighlight(self, x, y):
-        self.board[y][x]['defenseHighlight'] = True
-
-
-    def clearDefenseHighlights(self, color):
-        for y in range(19):
-            for x in range(19):
-                if self.getBead(x, y) == color:
-                    self.board[y][x]['defenseHighlight'] = False
-
-
     def isOpen(self, x, y):
         return (self.board[y][x]['bead'] == 'Open')
 
 
-    def findJumpPatterns(self, x, y, color):
-        self.jumpPatterns = []
-
-        patterns = []
-        patterns.append({ 'name': 'Jump', 'tokens': [ 'bead', 'opponent:s', 'opponent:s', 'bead' ]})
-
-        cumulativePatternsFound = []
-        for pattern in patterns:
-            patternsFound = self.findPatternAtPosition(x, y, color, patterns[0], [ Board.East, Board.Southeast, Board.South, Board.Southwest, Board.West, Board.Northwest, Board.North, Board.Northeast ])
-            if patternsFound:
-                cumulativePatternsFound += patternsFound
-
-        self.jumpPatterns = cumulativePatternsFound
-        for jumpPattern in self.jumpPatterns:
-            for position in jumpPattern['positions']:
-                self.removeBead(position['x'], position['y'])
-
-        return self.jumpPatterns != []
+    #--------------------------------------------------------------------------
+    # Highlights
+    #--------------------------------------------------------------------------
+    def addHighlight(self, position):
+        self.highlights.append(position)
+        self.board[position['y']][position['x']]['highlight'] = True
 
 
-    def findWinningPatterns(self, color):
-        self.winningPatterns = []
-
-        patterns = []
-        patterns.append({ 'name': 'Five', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Six', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Seven', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Eight', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Nine', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-
-        cumulativePatternsFound = []
-        for pattern in patterns:
-            patternsFound = self.findPattern(color, pattern)
-            if patternsFound:
-                cumulativePatternsFound += patternsFound
-
-        self.winningPatterns = cumulativePatternsFound
-        return self.winningPatterns != []
+    def getHighlight(self, x, y):
+        return self.board[y][x]['highlight']
 
 
-    def findAnnouncePatterns(self, color):
-        self.clearBeadHighlights(color)
-        self.announcePatterns[color] = []
-
-        patterns = []
-        patterns.append({ 'name': 'Open Three', 'tokens': [ 'not-bead', 'open', 'bead:s', 'bead:s', 'bead:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open', 'bead:s', 'open', 'bead:s', 'bead:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open', 'bead:s', 'bead:s', 'open', 'bead:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'bead:s', 'open', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'open', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'open', 'bead:s', 'not-bead' ] })
-        cumulativePatternsFound = []
-        for pattern in patterns:
-            patternsFound = self.findPattern(color, pattern)
-            if patternsFound:
-                cumulativePatternsFound += patternsFound
-
-        patterns = []
-        patterns.append({ 'name': 'Jump', 'tokens': [ 'bead', 'opponent:s', 'opponent:s', 'open' ]})
-        patterns.append({ 'name': 'Jump', 'tokens': [ 'open', 'opponent:s', 'opponent:s', 'bead' ]})
-        for pattern in patterns:
-            patternsFound = self.findPattern(color, pattern)
-            if patternsFound:
-                cumulativePatternsFound += patternsFound
-
-        self.announcePatterns[color] = cumulativePatternsFound
-
-        for announcePattern in self.announcePatterns[color]:
-            for position in announcePattern['positions']:
-                self.setBeadHighlight(position['x'], position['y'])
-
-        return self.announcePatterns[color] != []
+    def getHighlights(self):
+        return self.highlights
 
 
-    def findPointPatterns(self, color):
-        self.pointPatterns[color] = []
-
-        patterns = []
-        patterns.append({ 'name': 'Four', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-
-        cumulativePatternsFound = []
-        for pattern in patterns:
-            patternsFound = self.findPattern(color, pattern)
-            if patternsFound:
-                cumulativePatternsFound += patternsFound
-
-        # Having 5 or more beads in a row is a winning sequence and the
-        # player gets 5 points (logic for that is not handled here).
-        #
-        # However, if the player adds a bead that results in more than
-        # one 5+ sequence of beads, they get the win and 5 points for
-        # the first, but for every subsequent bead they get a single
-        # point.
-        firstWinningPattern = True
-        patterns = []
-        patterns.append({ 'name': 'Five', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Six', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Seven', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Eight', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Nine', 'tokens': [ 'not-bead', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'bead:s', 'not-bead' ] })
-        for pattern in patterns:
-            patternsFound = self.findPattern(color, pattern)
-            if patternsFound:
-                if firstWinningPattern:
-                    firstWinningPattern = False
-                    continue
-                cumulativePatternsFound += patternsFound
-
-        self.pointPatterns[color] = cumulativePatternsFound
-        return self.pointPatterns[color] != []
+    def clearHighlights(self):
+        self.highlights = []
+        for y in range(19):
+            for x in range(19):
+                self.board[y][x]['highlight'] = False
 
 
-    def findOffensePatterns(self, color):
+    def printAllHighlights(self):
+        self.printHighlights(None)
+
+
+    def printHighlights(self, category):
+        print()
+        if category is not None:
+            print(category + ' positions:')
+        for position in self.getHighlights():
+            if category == None or category == position['category']:
+                print(position['id'] + ' ' + self.xy(position['x'], position['y']))
+
+
+    #--------------------------------------------------------------------------
+    # Jumps
+    #--------------------------------------------------------------------------
+    def clearJumps(self):
+        self.jumps = []
+
+
+    def addJump(self, position):
+        self.jumps.append(position)
+
+
+    def getJumps(self):
+        return self.jumps
+
+
+    def printJumps(self):
+        print()
+        print('Jumps:')
+        for position in self.jumps:
+            print('  ' + str(position))
+
+
+
+    #--------------------------------------------------------------------------
+    # Points
+    #--------------------------------------------------------------------------
+    def clearPoints(self):
         for player in self.players:
-            self.clearOffenseHighlights(player.color)
-            self.offensePatterns[player.color] = []
+            self.points[player.color] = 0
 
-        # Offense
-        patterns = []
-        patterns.append({ 'name': 'Jump Potential', 'tokens': [ 'open:s', 'opponent', 'opponent', 'open:s' ]})
-        patterns.append({ 'name': 'Jump', 'tokens': [ 'bead', 'opponent', 'opponent', 'open:s' ]})
-        patterns.append({ 'name': 'Jump', 'tokens': [ 'open:s', 'opponent', 'opponent', 'bead' ]})
+    def addPoints(self, color, points):
+        self.points[color] += points
 
-        patterns.append({ 'name': 'Open Three Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Three Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Three', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Three', 'tokens': [ 'open', 'open:s', 'bead', 'bead', 'open:s', 'open' ]})
-
-        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
-
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'bead', 'bead', 'open:s', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'bead', 'open:s', 'bead', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'bead', 'open:s', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'open:s', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'open:s', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'closed', 'open:s', 'bead', 'bead', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'open:s', 'bead', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'open:s', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'open:s', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'open:s', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'open:s', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four Potential', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'bead', 'open:s', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'open:s', 'bead', 'bead', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'bead', 'bead', 'bead', 'open:s', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'bead', 'open:s', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'bead', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open', 'open:s', 'bead', 'bead', 'bead', 'closed' ] })
-
-        patterns.append({ 'name': 'Holed Open Four Potential ', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'open:s', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'open:s', 'bead', 'bead', 'open', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open', 'bead', 'bead', 'open:s', 'bead', 'open', 'not-bead' ] })
-
-        cumulativePatternsFound = []
-        for pattern in patterns:
-            patternsFound = self.findPattern(color, pattern)
-            if patternsFound:
-                cumulativePatternsFound += patternsFound
-
-        self.offensePatterns[color] = cumulativePatternsFound
-
-        for offensePattern in self.offensePatterns[color]:
-            for position in offensePattern['positions']:
-                self.setOffenseHighlight(position['x'], position['y'])
-
-        return self.offensePatterns[color] != []
+    def getPoints(self, color):
+        return self.points[color]
 
 
-    def findDefensePatterns(self, color):
+    #--------------------------------------------------------------------------
+    # Winner
+    #--------------------------------------------------------------------------
+    def clearWinner(self):
         for player in self.players:
-            self.clearDefenseHighlights(player.color)
-            self.defensePatterns[player.color] = []
+            self.winner[player.color] = False
 
-        # Defense
-        patterns = []
-        patterns.append({ 'name': 'Open Three', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'open:s', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Open Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'open:s', 'opponent', 'open:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'opponent', 'opponent', 'closed' ] })
-        patterns.append({ 'name': 'Closed Four', 'tokens': [ 'closed', 'opponent', 'opponent', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Open Four', 'tokens': [ 'not-bead', 'open:s', 'opponent', 'opponent', 'opponent', 'opponent', 'open:s', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'opponent', 'open:s', 'opponent', 'opponent', 'opponent', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'opponent', 'opponent', 'open:s', 'opponent', 'opponent', 'not-bead' ] })
-        patterns.append({ 'name': 'Holed Five', 'tokens': [ 'not-bead', 'opponent', 'opponent', 'opponent', 'open:s', 'opponent', 'not-bead' ] })
+    def setWinner(self, color):
+        self.winner[color] = True
 
-        cumulativePatternsFound = []
-        for pattern in patterns:
-            patternsFound = self.findPattern(color, pattern)
-            if patternsFound:
-                cumulativePatternsFound += patternsFound
-
-        self.defensePatterns[color] = cumulativePatternsFound
-        print(self.defensePatterns[color])
-
-        for defensePattern in self.defensePatterns[color]:
-            for position in defensePattern['positions']:
-                self.setDefenseHighlight(position['x'], position['y'])
-
-        return self.defensePatterns[color] != []
+    def getWinner(self, color):
+        return self.winner[color]
 
 
-    def findPattern(self, color, pattern):
-        cumulativePatternsFound = None
+    #--------------------------------------------------------------------------
+    # Moves
+    #--------------------------------------------------------------------------
+    def addMove(self, position):
+        y = position['y']
+        x = position['x']
+        self.board[y][x]['moves'].append(position)
+        self.board[y][x]['weight'] += position['weight']
+        if self.board[y][x]['weight'] > self.getHint()['weight']:
+            self.setHint(position)
+
+
+    def clearMoves(self):
+        for y in range(19):
+            for x in range(19):
+                self.board[y][x]['moves'] = []
+                self.board[y][x]['weight'] = 0
+
+
+    def printMoves(self):
+        for x in range(19):
+            for y in range(19):
+                if len(self.board[y][x]['moves']) > 0:
+                    print(self.xy(x, y) + ': weight is ' + str(self.board[y][x]['weight']))
+                    for position in self.board[y][x]['moves']:
+                        print('  ' + str(position))
+
+
+    #--------------------------------------------------------------------------
+    # Hint
+    #--------------------------------------------------------------------------
+    def setHint(self, position):
+        self.hint = { 'x': position['x'], 'y': position['y'], 'weight': position['weight'] }
+
+
+    def getHint(self):
+        return self.hint
+
+
+    def clearHint(self):
+        self.setHint({ 'x': 9, 'y': 9, 'weight': 0 })
+
+
+    def findAllPatternsAllPositionsAllDirections(self, color, opponentColor, opponentLastMove):
+        self.clearJumps()
+        self.clearHighlights()
+        self.clearMoves()
+        self.clearWinner()
+        self.clearPoints()
+        self.clearHint()
+
+        firstOpponentFiveOrMore = True
+        firstFiveOrMore = True
+        opponentPointPositions = {}
+        pointPositions = {}
+        for pattern in self.patterns:
+            category = pattern['category']
+            name = pattern['name']
+            tokens = pattern['tokens']
+            symmetric = pattern['symmetric']
+            weight = pattern['weight']
+
+            positions = self.findOnePatternAllPositionsAllDirections(pattern, color, opponentColor, opponentLastMove)
+
+            if len(positions) == 0:
+                continue
+
+            if category == 'OpponentWin':
+                self.setWinner(opponentColor)
+
+            for position in positions:
+
+                if category == 'OpponentJump':
+                    self.addJump(position)
+                    self.removeBead(position['x'], position['y'])
+
+                elif category in [ 'OpponentWin', 'OpponentPoint', 'OpponentAnnounce', 'Point', 'Announce' ]:
+                    self.addHighlight(position)
+                    if category == 'OpponentPoint':
+                        if position['id'] not in opponentPointPositions.keys():
+                            opponentPointPositions[position['id']] = position['name']
+                    if category == 'Point':
+                        if position['id'] not in pointPositions.keys():
+                            pointPositions[position['id']] = position['name']
+
+                elif category in [ 'Defense', 'Offense' ]:
+                    self.addMove(position)
+
+        for player in [ { 'color': color, 'positions': pointPositions }, { 'color': opponentColor, 'positions': opponentPointPositions } ]:
+            firstFiveOrMore = True
+            for name in player['positions'].values():
+                if name != '4' and firstFiveOrMore:
+                    firstFiveOrMore = False
+                else:
+                    self.addPoints(player['color'], 1)
+
+
+    def findOnePatternAllPositionsAllDirections(self, pattern, color, opponentColor, opponentLastMove):
+        positions = []
         for x in range(-1, 20):
             for y in range(-1, 20):
-                patternsFound = self.findPatternAtPosition(x, y, color, pattern, [ Board.East, Board.Southeast, Board.South, Board.Southwest ])
-                if patternsFound:
-                    if cumulativePatternsFound is None:
-                        cumulativePatternsFound = []
-                    cumulativePatternsFound += patternsFound
-        return cumulativePatternsFound
+
+                if pattern['category'] == 'OpponentJump' and (x != opponentLastMove['x'] or y != opponentLastMove['y']):
+                    continue
+
+                for direction in [ Board.East, Board.Southeast, Board.South, Board.Southwest ] if pattern['symmetric'] else [ Board.East, Board.Southeast, Board.South, Board.Southwest, Board.West, Board.Northwest, Board.North, Board.Northeast ]:
+
+                    id = self.xyraw(x, y) + '-' + direction['name'] + '-' + pattern['category'] + '-' + pattern['name'] + '-' + str(pattern['weight'])
+
+                    tmpX = x
+                    tmpY = y
+                    potentialPositions = []
+                    for token in pattern['tokens']:
+
+                        if not self.isTokenAtPosition(tmpX, tmpY, color, opponentColor, token):
+                            potentialPositions = []
+                            break
+
+                        if token == 'P' or token == 'O' or token == 'C' or token == ',':
+                            potentialPositions.append({ 'id': id, 'x': tmpX, 'y': tmpY, 'category': pattern['category'], 'name': pattern['name'], 'weight': pattern['weight'] })
+
+                        tmpX += direction['xOffset']
+                        tmpY += direction['yOffset']
+
+                    if len(potentialPositions) > 0:
+                        positions += potentialPositions
+
+        return positions
 
 
-    def findPatternAtPosition(self, x, y, color, pattern, directions):
-        patternsFound = None
-        for direction in directions:
-            save = self.findPatternAtPositionInDirection(x, y, color, pattern, direction)
-            if save:
-                if patternsFound is None:
-                    patternsFound = []
-                patternsFound += [ { 'name': pattern['name'], 'direction': direction['name'], 'positions': save } ]
+    def isTokenAtPosition(self, x, y, color, opponentColor, token):
 
-        return patternsFound
-
-
-    # Returns:
-    # - None if the pattern did not match in the direction
-    # - An array of matched positions if the pattern was detected
-    #   Note: If there are no detected positions but the patterns was found, then [] is returned
-    def findPatternAtPositionInDirection(self, x, y, color, pattern, direction):
-        save = []
-        for token in pattern['tokens']:
-            tokens = token.split(':')
-            if not self.expectedTokenAtPosition(x, y, color, tokens[0]):
-                return None
-
-            if len(tokens) == 2:
-                save.append({ 'x': x, 'y': y })
-            elif len(tokens) == 3:
-                save.append({ 'x': x, 'y': y, 'weight': tokens[2] })
-
-            # Update the position in the appropriate direction to get ready to look for the next token in the pattern
-            x += direction['xOffset']
-            y += direction['yOffset']
-
-        # If we made it this far, all the tokens in the pattern were found
-        return save
-
-
-    def expectedTokenAtPosition(self, x, y, color, expectedToken):
-
-        # bead
+        # player
         #
         # matches a bead played at the position by the current player
-        if expectedToken == 'bead':
+        if token == 'p' or token == 'P':
             if x > 18 or x < 0 or y > 18 or y < 0:
                 return False
             if self.getBead(x, y) == color:
@@ -369,37 +293,49 @@ class Board:
         # opponent
         #
         # matches a bead played at the position by an opposing player
-        if expectedToken == 'opponent':
+        if token == 'o' or token == 'O':
             if x > 18 or x < 0 or y > 18 or y < 0:
                 return False
-            if not self.isOpen(x, y) and self.getBead(x, y) != color:
+            if self.getBead(x, y) == opponentColor:
                 return True
             return False
 
         # open
         #
         # matches a position with no bead
-        if expectedToken == 'open':
+        if token == '.' or token == ',':
             if x > 18 or x < 0 or y > 18 or y < 0:
                 return False
             if self.isOpen(x, y):
                 return True
             return False
 
-        # not-bead
+        # not-player
         #
-        # not-bead means will match anything in the position other
+        # not-player means will match anything in the position other
         # than the current player's bead color including:
         # 1. a position that is off the board
         # 2. another player's bead
         # 3. an open position
-        if expectedToken == 'not-bead':
+        if token == '!':
             if x > 18 or x < 0 or y > 18 or y < 0:
                 return True
-
             if (self.getBead(x, y) != color):
                 return True
+            return False
 
+        # not-opponent
+        #
+        # not-player means will match anything in the position other
+        # than the current player's bead color including:
+        # 1. a position that is off the board
+        # 2. another player's bead
+        # 3. an open position
+        if token == '0':
+            if x > 18 or x < 0 or y > 18 or y < 0:
+                return True
+            if (self.getBead(x, y) != opponentColor):
+                return True
             return False
 
         # closed
@@ -407,31 +343,97 @@ class Board:
         # Matches two scenarios:
         # 1. a position that is off the board
         # 2. a position occupied by an opposing player's bead
-        if expectedToken == 'closed':
+        if token == 'c' or token == 'C':
             if (x > 18 or x < 0 or y > 18 or y < 0):
                 return True
             if not self.isOpen(x, y) and self.getBead(x, y) != color:
                 return True
             return False
 
-        print('board: we should never get here: expectedToken=' + expectedToken)
+        print('board: we should never get here: token=' + token)
         sys.exit(1)
 
 
+    def loadPatternDefinitions(self):
+        with open('patterns.txt') as f:
+            lines = f.readlines()
+
+        patterns = []
+        categoryLimit = 24
+        nameLimit = 29
+        tokensLimit = 56
+        symmetricLimit = 57
+        weightLimit = 60
+        for line in lines:
+            if line == '\n':
+                continue
+            category = ''
+            name = ''
+            tokens = ''
+            symmetric = ''
+            weight = ''
+            n = -1
+            for ch in line:
+                n += 1
+                if n < categoryLimit:
+                    category += ch
+                    continue
+                if n < nameLimit:
+                    name += ch
+                    continue
+                if n < tokensLimit:
+                    tokens += ch
+                    continue
+                if n < symmetricLimit:
+                    symmetric += ch
+                    continue
+                if n < weightLimit:
+                    weight += ch
+                    continue
+                patterns.append({
+                    'category': category.strip(),
+                    'name': name.strip(),
+                    'tokens': tokens.strip().split(),
+                    'symmetric': True if symmetric.strip() == 'T' else False,
+                    'weight': int(weight.strip())
+                })
+        return patterns
+
+
     def __str__(self):
-        s = '   '
+        s = '\n   '
         for x in range(19):
-            s += str(x  % 10) + ' '
+            s += str(x  % 10) + '  '
         s += '\n'
         for y in range(19):
             s += str(y % 10)  + '  '
             for x in range(19):
                 if self.isOpen(x, y):
-                    s += '. '
-                else:
-                    if self.getBeadHighlight(x, y):
-                        s += self.getBead(x, y)[0] + ' '
+                    if x == self.hint['x'] and y == self.hint['y']:
+                        s += 'O  '
                     else:
-                        s += self.getBead(x, y)[0].lower() + ' '
+                        s += '.  '
+                    # weight = self.board[y][x]['weight']
+                    # if x == self.hint['x'] and y == self.hint['y']:
+                    #     s += 'O  '
+                    # elif weight == 0:
+                    #     s += '.  '
+                    # elif weight > 0 and weight < 10:
+                    #     s += str(self.board[y][x]['weight']) + '  '
+                    # elif weight < -9:
+                    #     s += '<  '
+                    # else:
+                    #     s += '>  '
+                else:
+                    if self.getHighlight(x, y):
+                        s += self.getBead(x, y)[0] + '  '
+                    else:
+                        s += self.getBead(x, y)[0].lower() + '  '
             s += '\n'
         return s
+
+    def xy(self, x, y):
+        return '({0:>2}, {1:>2})'.format(x, y)
+
+    def xyraw(self, x, y):
+        return '{0},{1}'.format(x, y)

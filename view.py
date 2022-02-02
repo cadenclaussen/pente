@@ -115,14 +115,14 @@ def leave(e):
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
 
-    for position in offenseHighlights:
-        if x == position['x'] and y == position['y']:
-            e.widget.config(image=getOpenTileOffense(x, y))
-            return
-
     for position in defenseHighlights:
         if x == position['x'] and y == position['y']:
             e.widget.config(image=getOpenTileDefense(x, y))
+            return
+
+    for position in offenseHighlights:
+        if x == position['x'] and y == position['y']:
+            e.widget.config(image=getOpenTileOffense(x, y))
             return
 
     e.widget.config(image=getOpenTile(x, y))
@@ -200,7 +200,7 @@ def updateUx(match, board, players, currentPlayer):
             label.bind('<Leave>', leave)
             label.bind('<Button-1>', playBead)
 
-    # Set the new beadHiglights
+    # Set the new announceHighlights
     announceHighlights = []
     for player in players:
         for announcePattern in board.announcePatterns[player.color]:
@@ -211,21 +211,7 @@ def updateUx(match, board, players, currentPlayer):
                 label = Label(boardFrame, image=getBeadTileHighlighted(x, y, board.getBead(x, y)), borderwidth=0)
                 label.grid(row=y, column=x, padx=0, pady=0)
 
-    # Set the new moveHiglights
-    defenseHighlights = []
-    for player in players:
-        for defensePattern in board.defensePatterns[player.color]:
-            for position in defensePattern['positions']:
-                defenseHighlights.append(position)
-                x = position['x']
-                y = position['y']
-                label = Label(boardFrame, image=getOpenTileDefense(x, y), borderwidth=0)
-                label.grid(row=y, column=x, padx=0, pady=0)
-                label.bind('<Enter>', enter)
-                label.bind('<Leave>', leave)
-                label.bind('<Button-1>', playBead)
-
-    # Set the new moveHiglights
+    # Set the new offenseHighlights
     offenseHighlights = []
     for player in players:
         for offensePattern in board.offensePatterns[player.color]:
@@ -234,6 +220,20 @@ def updateUx(match, board, players, currentPlayer):
                 x = position['x']
                 y = position['y']
                 label = Label(boardFrame, image=getOpenTileOffense(x, y), borderwidth=0)
+                label.grid(row=y, column=x, padx=0, pady=0)
+                label.bind('<Enter>', enter)
+                label.bind('<Leave>', leave)
+                label.bind('<Button-1>', playBead)
+
+    # Set the new defenseHighlights
+    defenseHighlights = []
+    for player in players:
+        for defensePattern in board.defensePatterns[player.color]:
+            for position in defensePattern['positions']:
+                defenseHighlights.append(position)
+                x = position['x']
+                y = position['y']
+                label = Label(boardFrame, image=getOpenTileDefense(x, y), borderwidth=0)
                 label.grid(row=y, column=x, padx=0, pady=0)
                 label.bind('<Enter>', enter)
                 label.bind('<Leave>', leave)
