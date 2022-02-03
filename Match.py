@@ -3,24 +3,24 @@ import random
 from Game import Game
 
 class Match:
-    players = None
+    colors = None
     game = None
-    gameCount = -1
+    gameCount = 0
     winner = None
     priorLoser = None
     points = {}
 
 
     def __init__(self):
-        self.players = [ 'Blue', 'Green' ]
+        self.colors = [ 'Blue', 'Green' ]
         self.gameCount = -1
-        self.points[self.players[0]] = 0
-        self.points[self.players[1]] = 0
+        self.points[self.colors[0]] = 0
+        self.points[self.colors[1]] = 0
 
 
     def newGame(self):
         self.gameCount += 1
-        self.game = Game(self, self.players, self.priorLoser if self.priorLoser is not None else random.choice(self.players))
+        self.game = Game(self, self.colors, self.priorLoser if self.priorLoser is not None else random.choice(self.colors))
 
 
     def isWinner(self):
