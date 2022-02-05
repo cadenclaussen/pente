@@ -30,7 +30,6 @@ class Game:
             self.jumps[color] = 0
             self.points[color] = 0
         self.status = Status.InProgress
-        print(self.status)
 
 
     def nextColor(self):
@@ -53,14 +52,6 @@ class Game:
         self.lastMove = { 'x': x, 'y': y }
         self.beadsPlayed += 1
         self.board.addBead(x, y, self.currentColor)
-        self.nextColor()
-        self.postMove()
-
-
-    # TODO: More to do here, undo jumps, keep move from two moves ago, revamp score
-    def undoLastMove(self):
-        self.beadsPlayed -= 1
-        self.board.removeBead(self.lastMove['x'], self.lastMove['y'])
         self.nextColor()
         self.postMove()
 

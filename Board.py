@@ -106,7 +106,6 @@ class Board:
 
 
     def addOpponentJump(self, position):
-        print('Adding jump: ' + str(position))
         self.opponentJumps.append(position)
 
 

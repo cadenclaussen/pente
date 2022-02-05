@@ -8,35 +8,35 @@ images = None
 def getBead(color, highlight):
     global images
     if images is None:
-        images = loadTiles()
+        images = loadImages()
     tileSuffix = ''
     if highlight:
         tileSuffix = '_Highlighted'
     return images[color + tileSuffix]
 
 def getOpenImage(x, y):
-    return getTile(x, y, 'Open', None)
+    return getImage(x, y, 'Open', None)
 
-def getOpenImageOffense(x, y):
-    return getTile(x, y, 'Open', 'Offense')
+def getHintImage(x, y):
+    return getImage(x, y, 'Open', 'Offense')
 
 def getOpenImageDefense(x, y):
-    return getTile(x, y, 'Open', 'Defense')
+    return getImage(x, y, 'Open', 'Defense')
 
 def getBeadImage(x, y, color):
-    return getTile(x, y, color, None)
+    return getImage(x, y, color, None)
 
 def getHighlightedBeadImage(x, y, color):
-    return getTile(x, y, color, 'Highlighted')
+    return getImage(x, y, color, 'Highlighted')
 
 
 
-def getTile(x, y, tilePrefix, tileSuffix):
+def getImage(x, y, tilePrefix, tileSuffix):
     global images
 
     # Singleton lazy load all the images
     if images is None:
-        loadTiles()
+        loadImages()
 
     if tileSuffix is None:
         tileSuffix = ''
@@ -44,12 +44,12 @@ def getTile(x, y, tilePrefix, tileSuffix):
         tileSuffix = '_' + tileSuffix
 
     # Prefixes: Open, Blue, Red, Green
-    # Tile Name and Direction: Intersection, Diamond_Bold2, Diamond_Bold1_North
-    # Tile Suffix: Offense, Defense, Highlighted
-    return images[tilePrefix + '_' + getTileNameAndDirection(x, y) + tileSuffix]
+    # Image Name and Direction: Intersection, Diamond_Bold2, Diamond_Bold1_North
+    # Image Suffix: Offense, Defense, Highlighted
+    return images[tilePrefix + '_' + getImageNameAndDirection(x, y) + tileSuffix]
 
 
-def getTileNameAndDirection(x, y):
+def getImageNameAndDirection(x, y):
     global images
 
     # NOTE: These are very order dependent, do not move them around
@@ -106,16 +106,16 @@ def getTileNameAndDirection(x, y):
     return 'Intersection'
 
 
-def loadTiles():
+def loadImages():
     global images
     images = {}
 
-    images['Blue'] = loadTile('Blue.gif', None)
-    images['Blue_Highlighted'] = loadTile('Blue_Highlighted.gif', None)
-    images['Red'] = loadTile('Red.gif', None)
-    images['Red_Highlighted'] = loadTile('Red_Highlighted.gif', None)
-    images['Green'] = loadTile('Green.gif', None)
-    images['Green_Highlighted'] = loadTile('Green_Highlighted.gif', None)
+    images['Blue'] = loadImage('Blue.gif', None)
+    images['Blue_Highlighted'] = loadImage('Blue_Highlighted.gif', None)
+    images['Red'] = loadImage('Red.gif', None)
+    images['Red_Highlighted'] = loadImage('Red_Highlighted.gif', None)
+    images['Green'] = loadImage('Green.gif', None)
+    images['Green_Highlighted'] = loadImage('Green_Highlighted.gif', None)
 
     tileGroups = [
         {
@@ -172,14 +172,14 @@ def loadTiles():
 
     for tileGroup in tileGroups:
         if 'directions' not in tileGroup:
-            loadTileGroup(tileGroup['name'], '', None)
+            loadImageGroup(tileGroup['name'], '', None)
             continue
 
         for directionKey in tileGroup['directions'].keys():
-            loadTileGroup(tileGroup['name'], '_' + directionKey, tileGroup['directions'][directionKey])
+            loadImageGroup(tileGroup['name'], '_' + directionKey, tileGroup['directions'][directionKey])
 
 
-def loadTileGroup(tileName, directionKey, direction):
+def loadImageGroup(tileName, directionKey, direction):
     global images
     for tilePrefix in [ 'Open', 'Blue', 'Red', 'Green' ]:
         # Load images, examples:
@@ -191,7 +191,7 @@ def loadTileGroup(tileName, directionKey, direction):
         # - Blue_Corner_Northeast -> Blue_Corner.gif (Northeast)
         key = tilePrefix + '_' + tileName + directionKey
         image = tilePrefix + '_' + tileName + '.gif'
-        images[key] = loadTile(image, direction)
+        images[key] = loadImage(image, direction)
 
         for tileSuffix in [ 'Offense', 'Defense', 'Highlighted' ]:
             if (tilePrefix == 'Open' and tileSuffix == 'Highlighted') or (tilePrefix != 'Open' and tileSuffix != 'Highlighted'):
@@ -206,10 +206,10 @@ def loadTileGroup(tileName, directionKey, direction):
             # - Blue_Corner_Northeast_Highlighted -> Blue_Corner_Highlighted.gif (Northeast)
             key = tilePrefix + '_' + tileName + directionKey + '_' + tileSuffix
             image = tilePrefix + '_' + tileName + '_' + tileSuffix + '.gif'
-            images[key] = loadTile(image, direction)
+            images[key] = loadImage(image, direction)
 
 
-def loadTile(imageFile, direction):
+def loadImage(imageFile, direction):
     image = PI.open('images/' + imageFile)
     if direction is None:
         return ImageTk.PhotoImage(image)

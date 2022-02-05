@@ -22,10 +22,3 @@ def addBead(x, y):
     match.game.addBead(x, y)
     print(match)
     return match
-
-
-def undoLastMove(x, y):
-    global match
-    match.game.undoLastMove(x, y)
-    print(match)
-    return match

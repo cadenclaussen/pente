@@ -3,19 +3,17 @@ from tkinter import ttk
 from images import *
 import controller
 
-
 boardFrame = None
 rightMarginFrame = None
 statusFrame = None
-hint = None
 
 statusWidgets = []
-hintLabel = None
 weightLabels = []
 moveLabels = []
 
-highlights = []
 match = None
+highlights = []
+hint = None
 
 Helv40 = ('Helvetica', 40)
 Helv18 = ('Helvetica', 18)
@@ -23,6 +21,25 @@ Helv14 = ('Helvetica', 14)
 Helv8 = ('Helvetica', 8)
 
 
+# Here are what the primary UI Frames look like with
+# height/width:
+#
+#    +-- 2 --+------ 19 ------+-- 2 --+
+#    |       |                |       |
+#    |       2     Header     2       |
+#    |       |                |       |
+#    |       +----------------+       |
+#    |       |                |       |
+#    |       |                |       |
+#    |  LM   19    Board     19  RM   |
+#    |       |                |       |
+#    |       |                |       |
+#    |       +----------------+       |
+#    |       |                |       |
+#    |       5     Status     5       |
+#    |       |                |       |
+#    +-- 2 --+------ 19 ------+-- 2 --+
+#
 def main():
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
@@ -35,23 +52,6 @@ def main():
     FooterHeight = 10
     BoardHeight = 19
     StatusHeight = 5
-    ActionHeight = 2
-
-    #    +-- 2 --+------ 19 ------+-- 2 --+
-    #    |       |                |       |
-    #    |       2     Header     2       |
-    #    |       |                |       |
-    #    |       +----------------+       |
-    #    |       |                |       |
-    #    |       |                |       |
-    #    |  LM   19    Board     19  RM   |
-    #    |       |                |       |
-    #    |       |                |       |
-    #    |       +----------------+       |
-    #    |       |                |       |
-    #    |       5     Status     5       |
-    #    |       |                |       |
-    #    +-- 2 --+------ 19 ------+-- 2 --+
 
     leftMarginFrame = Frame(root)
     rightMarginFrame = Frame(root)
@@ -59,15 +59,15 @@ def main():
     boardFrame = Frame(root)
     statusFrame = Frame(root)
 
-    leftMarginFrame.grid(row=0, column=0, rowspan=(HeaderHeight + BoardHeight + StatusHeight + ActionHeight), columnspan=2, sticky=N)
-    rightMarginFrame.grid(row=0, column=22, rowspan=(HeaderHeight + BoardHeight + StatusHeight + ActionHeight), columnspan=2, sticky=N)
+    leftMarginFrame.grid(row=0, column=0, rowspan=(HeaderHeight + BoardHeight + StatusHeight), columnspan=2, sticky=N)
+    rightMarginFrame.grid(row=0, column=22, rowspan=(HeaderHeight + BoardHeight + StatusHeight), columnspan=2, sticky=N)
     headerFrame.grid(row=0, column=3, rowspan=2, columnspan=19)
     boardFrame.grid(row=2, column=3, rowspan=19, columnspan=19)
     statusFrame.grid(row=21, column=3, rowspan=5, columnspan=19)
     for row in range(20):
         leftMarginFrame.grid_rowconfigure(row, minsize=30, weight=1)
         rightMarginFrame.grid_rowconfigure(row, minsize=30, weight=1)
-    leftMarginFrame.grid_columnconfigure(0, minsize=30, weight=1)
+        leftMarginFrame.grid_columnconfigure(0, minsize=30, weight=1)
     for column in range(9):
         statusFrame.grid_columnconfigure(column, minsize=30, weight=1)
 
@@ -87,12 +87,10 @@ def newMatch(e):
 
 def newGame(e):
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
-
     match = controller.newGame()
     initializeBoard()
     highlights = []
     updateUx()
-
     if match.game.currentColor == 'Red':
         addBeadAI(hint['x'], hint['y'])
 
@@ -101,24 +99,29 @@ def initializeBoard():
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     # Add all the 19x19 images to the boardFrame to initialize the board
-    # - For each spot on the board, bind enter(), leave(), and addBead() functions
+    # - For each spot on the board, bind enterBoardPosition(), leaveBoardPosition(), and addBead() functions
     # - Upper left is [0, 0], bottom right is [18, 18], middle is [9, 9]
     for y in range(19):
         for x in range(19):
             label = Label(boardFrame, image=getOpenImage(x, y), borderwidth=0)
             label.grid(row=y, column=x, padx=0, pady=0)
-            label.bind('<Enter>', enter)
-            label.bind('<Leave>', leave)
+            label.bind('<Enter>', enterBoardPosition)
+            label.bind('<Leave>', leaveBoardPosition)
             label.bind('<Button-1>', addBead)
 
 
-def enter(e):
+# Invoked when the mouse enters one of the 19x19 grid position on the board
+# As a result of the rollover, show the player's bead as they roll over
+# each board position so they can visualize what it would look like if
+# they played at that position on the board.
+def enterBoardPosition(e):
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     # Get the x and y board positions the mouse entered
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
 
+    # If a bead is already played just update the right margin of the Ux
     if match.game.board.getBead(x, y) != 'Open':
         updateRightMargin(x, y)
         return
@@ -134,11 +137,7 @@ def enter(e):
         updateRightMargin(x, y)
         return
 
-    # Show the player's bead as they roll over each board position so
-    # they can visualize what it would look like if they played at
-    # that position on the board.
-    #
-    # Note: This temporary bead removed by the leave() function when
+    # Note: This temporary bead removed by the leaveBoardPosition() function when
     # the player's mouse leaves the position.
     e.widget.config(image=getBeadImage(x, y, match.game.currentColor))
     updateRightMargin(x, y)
@@ -146,32 +145,36 @@ def enter(e):
 
 
 # When the mouse enters the board, if the spot is empty, the leave
-# event will be bound to the leave() function.  Since the enter event
-# previously invoked the enter() function temporarily putting a bead
-# in the spot, the leave() function is responsible for setting the
+# event will be bound to the leaveBoardPosition() function.  Since the enter event
+# previously invoked the enterBoardPosition() function temporarily putting a bead
+# in the spot, the leaveBoardPosition() function is responsible for setting the
 # spot back to the image that indicates the spot is empty.
-def leave(e):
+def leaveBoardPosition(e):
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
 
-    if x == hint['x'] and y == hint['y']:
-        e.widget.config(image=getOpenImageOffense(x, y))
-    else:
-        e.widget.config(image=getOpenImage(x, y))
+    # If the "open" position is the hint, restore the hint
+    # if x == hint['x'] and y == hint['y']:
+    #     e.widget.config(image=getHintImage(x, y))
+    # else:
+    #     e.widget.config(image=getOpenImage(x, y))
+    e.widget.config(image=getOpenImage(x, y))
 
 
+# Performs the same function as addBead but is directly called to support
+# the AI player adding a bead.
 def addBeadAI(x, y):
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
-
     label = Label(boardFrame, image=getBeadImage(x, y, match.game.currentColor), borderwidth=0)
     label.grid(row=y, column=x, padx=0, pady=0)
-    label.bind('<Enter>', enter)
+    label.bind('<Enter>', enterBoardPosition)
     match = controller.addBead(x, y)
     updateUx()
 
 
+# Called as a result of a mouse click on one of the board's grid positions
 def addBead(e):
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
@@ -192,8 +195,8 @@ def addBead(e):
     if x != hint['x'] or y != hint['y']:
         label = Label(boardFrame, image=getOpenImage(hint['x'], hint['y']), borderwidth=0)
         label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
-        label.bind('<Enter>', enter)
-        label.bind('<Leave>', leave)
+        label.bind('<Enter>', enterBoardPosition)
+        label.bind('<Leave>', leaveBoardPosition)
         label.bind('<Button-1>', addBead)
 
     # Add the bead
@@ -224,8 +227,8 @@ def updateUx():
         y = position['y']
         label = Label(boardFrame, image=getOpenImage(x, y), borderwidth=0)
         label.grid(row=y, column=x, padx=0, pady=0)
-        label.bind('<Enter>', enter)
-        label.bind('<Leave>', leave)
+        label.bind('<Enter>', enterBoardPosition)
+        label.bind('<Leave>', leaveBoardPosition)
         label.bind('<Button-1>', addBead)
 
     # Set the new highlights
@@ -237,13 +240,19 @@ def updateUx():
         label = Label(boardFrame, image=getHighlightedBeadImage(x, y, match.game.board.getBead(x, y)), borderwidth=0)
         label.grid(row=y, column=x, padx=0, pady=0)
 
+    # Add the hint
     hint = match.game.board.getHint()
-    label = Label(boardFrame, image=getOpenImageOffense(hint['x'], hint['y']), borderwidth=0)
-    label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
-    label.bind('<Enter>', enter)
-    label.bind('<Leave>', leave)
-    label.bind('<Button-1>', addBead)
+    # label = Label(boardFrame, image=getHintImage(hint['x'], hint['y']), borderwidth=0)
+    # label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
+    # label.bind('<Enter>', enterBoardPosition)
+    # label.bind('<Leave>', leaveBoardPosition)
+    # label.bind('<Button-1>', addBead)
 
+    # The following code displays:
+    # - blue and red player jumps
+    # - blue and red player game points
+    # - blue and red player match points
+    # - the button to start a new game or match if appropriate
     for statusWidget in statusWidgets:
         statusWidget.destroy()
 
@@ -282,7 +291,6 @@ def updateUx():
         button .bind('<Button-1>', newMatch)
         statusWidgets.append(button)
     elif match.game.isWinner():
-        print('Game winner')
         button = ttk.Button(statusFrame, text='New Game')
         button .grid(row=1, column=5, sticky=EW)
         button .bind('<Button-1>', newGame)
@@ -318,8 +326,14 @@ def updateUx():
     statusWidgets.append(label)
 
 
+# The right margin frame displays information about each grid position
+# a user can play on.  Specifically, what's the weight of the play, and
+# what are all the offensive an defensive patterns that position
+# contributes to.
 def updateRightMargin(x, y):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintLabel, weightLabels, moveLabels
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, weightLabels, moveLabels
+
+    return
 
     # Clear out the old weight and move labels
     for weightLabel in weightLabels:

@@ -1,4 +1,7 @@
 # Features
+
+- Increase hint weight if jump results in game win
+- Increase hint weight if jumps is also defensive
 - Optimize weights
   - 1000 Offense L5, O5, LH6, OH6, L6, O6 (WIN)
   -  499 Defense C4, O4, H5, H6, H7, H8 (STOP WIN)
@@ -10,9 +13,6 @@
   -    6 Defense
   -    2 Offense
   -    1 Defense
-- Add extra points if game winning move
-  - Winning jump ...
-  - Increase weight of jumps that break up O3, O4, ...
 - Undo
 - Three+ player capability
 - Client/server
