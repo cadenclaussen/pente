@@ -18,4 +18,3 @@
 - Client/server
 - Web based
 - Mobile
-- Randomize move 2, move 3, and any moves with equa weight

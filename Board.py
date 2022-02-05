@@ -16,7 +16,7 @@ class Board:
     opponentJumps = []
     points = {}
     winner = {}
-    hint = {}
+    hints = []
 
 
     def __init__(self, colors):
@@ -158,8 +158,29 @@ class Board:
         x = position['x']
         self.board[y][x]['moves'].append(position)
         self.board[y][x]['weight'] += position['weight']
-        if self.board[y][x]['weight'] > self.getHint()['weight']:
+        if self.board[y][x]['weight'] > self.getHintWeight():
             self.setHint(position['x'], position['y'], self.board[y][x]['weight'])
+        elif self.board[y][x]['weight'] == self.getHintWeight():
+            self.addHint(position['x'], position['y'], self.board[y][x]['weight'])
+
+
+    def addMove1(self):
+        self.addMove({ 'category': 'Openings', 'name': 'Opening', 'x': 9, 'y': 9, 'weight': 1 })
+
+
+    def addMove2(self):
+        for x in range(8, 11):
+            for y in range(8, 11):
+                if x == 9 and y == 9:
+                    continue
+                self.addMove({ 'category': 'Openings', 'name': 'Second', 'x': x, 'y': y, 'weight': 1 })
+
+
+    def addMove3(self):
+        for x in range(6, 13):
+            for y in range(6, 13):
+                if x == 6 or x == 12 or y == 6 or y == 12:
+                    self.addMove({ 'category': 'Openings', 'name': 'Third', 'x': x, 'y': y, 'weight': 1 })
 
 
     def clearMoves(self):
@@ -190,11 +211,19 @@ class Board:
     # Hint
     #--------------------------------------------------------------------------
     def setHint(self, x, y, weight):
-        self.hint = { 'x': x, 'y': y, 'weight': weight }
+        self.hints = [ { 'x': x, 'y': y, 'weight': weight } ]
+
+
+    def addHint(self, x, y, weight):
+        self.hints.append({ 'x': x, 'y': y, 'weight': weight })
 
 
     def getHint(self):
-        return self.hint
+        return random.choice(self.hints)
+
+
+    def getHintWeight(self):
+        return self.hints[0]['weight']
 
 
     def clearHint(self):
@@ -209,6 +238,13 @@ class Board:
         self.clearPoints()
         self.clearHint()
 
+        if beadsPlayed == 0:
+            return self.addMove1()
+        elif beadsPlayed == 1:
+            return self.addMove2()
+        elif beadsPlayed == 2:
+            return self.addMove3()
+
         firstOpponentFiveOrMore = True
         firstFiveOrMore = True
         opponentPointPositions = {}
@@ -217,6 +253,7 @@ class Board:
             category = pattern['category']
             name = pattern['name']
             tokens = pattern['tokens']
+
             symmetric = pattern['symmetric']
             weight = pattern['weight']
 
@@ -255,35 +292,6 @@ class Board:
                     firstFiveOrMore = False
                 else:
                     self.addPoints(color['color'], 1)
-
-        if beadsPlayed == 0:
-            position = { 'category': 'Openings', 'name': 'Opening', 'x': 9, 'y': 9, 'weight': 1 }
-            self.addMove(position)
-
-        elif beadsPlayed == 1:
-            hintOptions = []
-            for x in range(8, 11):
-                for y in range(8, 11):
-                    if x == 9 and y == 9:
-                        continue
-                    position = { 'category': 'Openings', 'name': 'Second', 'x': x, 'y': y, 'weight': 1 }
-                    self.addMove(position)
-                    hintOptions.append(position)
-            hintChoice = random.choice(hintOptions)
-            self.setHint(hintChoice['x'], hintChoice['y'], hintChoice['weight'])
-
-        elif beadsPlayed == 2:
-            hintOptions = []
-            for x in range(6, 13):
-                for y in range(6, 13):
-                    self.board[y][x]['moves'] = []
-                    self.board[y][x]['weight'] = 0
-                    if x == 6 or x == 12 or y == 6 or y == 12:
-                        position = { 'category': 'Openings', 'name': 'Third', 'x': x, 'y': y, 'weight': 1 }
-                        self.addMove(position)
-                        hintOptions.append(position)
-            hintChoice = random.choice(hintOptions)
-            self.setHint(hintChoice['x'], hintChoice['y'], hintChoice['weight'])
 
 
     def findOnePatternAllPositionsAllDirections(self, pattern, color, opponentColor, opponentLastMove):
@@ -450,10 +458,7 @@ class Board:
             s += str(y % 10)  + '  '
             for x in range(19):
                 if self.isOpen(x, y):
-                    if x == self.hint['x'] and y == self.hint['y']:
-                        s += 'O  '
-                    else:
-                        s += '.  '
+                    s += '.  '
                 else:
                     if self.getHighlight(x, y):
                         s += self.getBead(x, y)[0] + '  '
