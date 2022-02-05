@@ -14,6 +14,7 @@ moveLabels = []
 match = None
 highlights = []
 hint = None
+hintOption = False
 
 Helv40 = ('Helvetica', 40)
 Helv18 = ('Helvetica', 18)
@@ -41,7 +42,7 @@ Helv8 = ('Helvetica', 8)
 #    +-- 2 --+------ 19 ------+-- 2 --+
 #
 def main():
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
 
     root = Tk()
     root.title('Pente')
@@ -74,29 +75,53 @@ def main():
     Label(headerFrame, text='Pente v0.2', font=Helv40).grid(row=0, column=0, sticky=EW)
     Label(headerFrame, text='by Shane Claussen and Caden Claussen', font=Helv8).grid(row=1, column=0, sticky=EW)
 
+    button = ttk.Button(statusFrame, text='Turn Hints On')
+    button.grid(row=3, column=5, sticky=EW)
+    button.bind('<Button-1>', toggleHintOption)
+
     newMatch(None)
 
     root.mainloop()
 
 
+def toggleHintOption(e):
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
+    if hintOption:
+        hintOption = False
+        e.widget.config(text='Turn Hints On')
+        label = Label(boardFrame, image=getOpenImage(hint['x'], hint['y']), borderwidth=0)
+        label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
+        label.bind('<Enter>', enterBoardPosition)
+        label.bind('<Leave>', leaveBoardPosition)
+        label.bind('<Button-1>', addBead)
+    else:
+        hintOption = True
+        e.widget.config(text='Turn Hints Off')
+        label = Label(boardFrame, image=getHintImage(hint['x'], hint['y']), borderwidth=0)
+        label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
+        label.bind('<Enter>', enterBoardPosition)
+        label.bind('<Leave>', leaveBoardPosition)
+        label.bind('<Button-1>', addBead)
+
+
 def newMatch(e):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
     match = controller.newMatch()
     newGame(e)
 
 
 def newGame(e):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
     match = controller.newGame()
     initializeBoard()
     highlights = []
     updateUx()
-    if match.game.currentColor == 'Red':
+    if not match.game.gameOver() and match.game.currentColor == 'Red':
         addBeadAI(hint['x'], hint['y'])
 
 
 def initializeBoard():
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
 
     # Add all the 19x19 images to the boardFrame to initialize the board
     # - For each spot on the board, bind enterBoardPosition(), leaveBoardPosition(), and addBead() functions
@@ -115,7 +140,10 @@ def initializeBoard():
 # each board position so they can visualize what it would look like if
 # they played at that position on the board.
 def enterBoardPosition(e):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
+
+    if match.game.gameOver():
+        return
 
     # Get the x and y board positions the mouse entered
     x = int(e.widget.grid_info()['column'])
@@ -150,23 +178,25 @@ def enterBoardPosition(e):
 # in the spot, the leaveBoardPosition() function is responsible for setting the
 # spot back to the image that indicates the spot is empty.
 def leaveBoardPosition(e):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
+
+    if match.game.gameOver():
+        return
 
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
 
     # If the "open" position is the hint, restore the hint
-    # if x == hint['x'] and y == hint['y']:
-    #     e.widget.config(image=getHintImage(x, y))
-    # else:
-    #     e.widget.config(image=getOpenImage(x, y))
-    e.widget.config(image=getOpenImage(x, y))
+    if hintOption and x == hint['x'] and y == hint['y']:
+        e.widget.config(image=getHintImage(x, y))
+    else:
+        e.widget.config(image=getOpenImage(x, y))
 
 
 # Performs the same function as addBead but is directly called to support
 # the AI player adding a bead.
 def addBeadAI(x, y):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
     label = Label(boardFrame, image=getBeadImage(x, y, match.game.currentColor), borderwidth=0)
     label.grid(row=y, column=x, padx=0, pady=0)
     label.bind('<Enter>', enterBoardPosition)
@@ -176,7 +206,10 @@ def addBeadAI(x, y):
 
 # Called as a result of a mouse click on one of the board's grid positions
 def addBead(e):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
+
+    if match.game.gameOver():
+        return
 
     # Get the position the bead was played at
     x = int(e.widget.grid_info()['column'])
@@ -207,12 +240,12 @@ def addBead(e):
     match = controller.addBead(x, y)
     updateUx()
 
-    if match.game.currentColor == 'Red':
+    if not match.game.gameOver() and match.game.currentColor == 'Red':
         addBeadAI(hint['x'], hint['y'])
 
 
 def updateUx():
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption
 
     # Clear the old highlights revering back to the bead image without the highlight
     for position in highlights:
@@ -242,11 +275,12 @@ def updateUx():
 
     # Add the hint
     hint = match.game.board.getHint()
-    # label = Label(boardFrame, image=getHintImage(hint['x'], hint['y']), borderwidth=0)
-    # label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
-    # label.bind('<Enter>', enterBoardPosition)
-    # label.bind('<Leave>', leaveBoardPosition)
-    # label.bind('<Button-1>', addBead)
+    if hintOption:
+        label = Label(boardFrame, image=getHintImage(hint['x'], hint['y']), borderwidth=0)
+        label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
+        label.bind('<Enter>', enterBoardPosition)
+        label.bind('<Leave>', leaveBoardPosition)
+        label.bind('<Button-1>', addBead)
 
     # The following code displays:
     # - blue and red player jumps
@@ -285,15 +319,15 @@ def updateUx():
     label.grid(row=3, column=(Color1ColumnOffset + 2), sticky='w')
     statusWidgets.append(label)
 
-    if match.game.isWinner() and match.isWinner():
+    if match.game.gameOver() and match.matchOver():
         button = ttk.Button(statusFrame, text='New Match')
-        button .grid(row=1, column=5, sticky='nw')
-        button .bind('<Button-1>', newMatch)
+        button.grid(row=1, column=5, sticky='nw')
+        button.bind('<Button-1>', newMatch)
         statusWidgets.append(button)
-    elif match.game.isWinner():
+    elif match.game.gameOver():
         button = ttk.Button(statusFrame, text='New Game')
-        button .grid(row=1, column=5, sticky=EW)
-        button .bind('<Button-1>', newGame)
+        button.grid(row=1, column=5, sticky=EW)
+        button.bind('<Button-1>', newGame)
         statusWidgets.append(button)
 
     Color2ColumnOffset = 5
@@ -331,9 +365,10 @@ def updateUx():
 # what are all the offensive an defensive patterns that position
 # contributes to.
 def updateRightMargin(x, y):
-    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, weightLabels, moveLabels
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintOption, weightLabels, moveLabels
 
-    return
+    if not hintOption:
+        return
 
     # Clear out the old weight and move labels
     for weightLabel in weightLabels:

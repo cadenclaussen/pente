@@ -81,7 +81,7 @@ class Game:
         self.points[self.opponentColor] += self.board.getPoints(self.opponentColor)
         self.points[self.currentColor] += self.board.getPoints(self.currentColor)
 
-        if self.isWinner():
+        if self.gameOver():
             self.match.updateMatchScore(self.winner, self.points[self.winner], self.loser, self.points[self.loser])
 
 
@@ -91,7 +91,7 @@ class Game:
         self.status = Status.Finished
 
 
-    def isWinner(self):
+    def gameOver(self):
         return self.status == Status.Finished
 
 

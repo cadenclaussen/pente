@@ -46,7 +46,7 @@ class Match:
         self.status = Status.Finished
 
 
-    def isWinner(self):
+    def matchOver(self):
         return self.status == Status.Finished
 
 
