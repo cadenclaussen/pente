@@ -14,7 +14,6 @@ def getBead(color, highlight):
         tileSuffix = '_Highlighted'
     return images[color + tileSuffix]
 
-
 def getOpenImage(x, y):
     return getTile(x, y, 'Open', None)
 

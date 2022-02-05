@@ -1,3 +1,4 @@
+import random
 import sys
 
 
@@ -12,7 +13,7 @@ class Board:
     Northeast = { 'name': 'northeast', 'yOffset': -1, 'xOffset': 1 }
 
     highlights = []
-    jumps = []
+    opponentJumps = []
     points = {}
     winner = {}
     hint = {}
@@ -39,7 +40,7 @@ class Board:
                 })
 
         # Initialize all the board metadata
-        self.analyze(colors[0], colors[1], { 'x': 9, 'y': 9 })
+        self.analyze(colors[0], colors[1], { 'x': 9, 'y': 9 }, 0)
 
 
     #--------------------------------------------------------------------------
@@ -158,7 +159,7 @@ class Board:
         self.board[y][x]['moves'].append(position)
         self.board[y][x]['weight'] += position['weight']
         if self.board[y][x]['weight'] > self.getHint()['weight']:
-            self.setHint(position)
+            self.setHint(position['x'], position['y'], self.board[y][x]['weight'])
 
 
     def clearMoves(self):
@@ -166,6 +167,14 @@ class Board:
             for x in range(19):
                 self.board[y][x]['moves'] = []
                 self.board[y][x]['weight'] = 0
+
+
+    def getMoves(self, x, y):
+        return self.board[y][x]['moves']
+
+
+    def getWeight(self, x, y):
+        return self.board[y][x]['weight']
 
 
     def printMoves(self):
@@ -180,8 +189,8 @@ class Board:
     #--------------------------------------------------------------------------
     # Hint
     #--------------------------------------------------------------------------
-    def setHint(self, position):
-        self.hint = { 'x': position['x'], 'y': position['y'], 'weight': position['weight'] }
+    def setHint(self, x, y, weight):
+        self.hint = { 'x': x, 'y': y, 'weight': weight }
 
 
     def getHint(self):
@@ -189,10 +198,10 @@ class Board:
 
 
     def clearHint(self):
-        self.setHint({ 'x': 9, 'y': 9, 'weight': 0 })
+        self.setHint(9, 9, 0)
 
 
-    def analyze(self, color, opponentColor, opponentLastMove):
+    def analyze(self, color, opponentColor, opponentLastMove, beadsPlayed):
         self.clearOpponentJumps()
         self.clearHighlights()
         self.clearMoves()
@@ -244,6 +253,35 @@ class Board:
                     firstFiveOrMore = False
                 else:
                     self.addPoints(color['color'], 1)
+
+        if beadsPlayed == 0:
+            position = { 'category': 'Openings', 'name': 'Opening', 'x': 9, 'y': 9, 'weight': 1 }
+            self.addMove(position)
+
+        elif beadsPlayed == 1:
+            hintOptions = []
+            for x in range(8, 11):
+                for y in range(8, 11):
+                    if x == 9 and y == 9:
+                        continue
+                    position = { 'category': 'Openings', 'name': 'Second', 'x': x, 'y': y, 'weight': 1 }
+                    self.addMove(position)
+                    hintOptions.append(position)
+            hintChoice = random.choice(hintOptions)
+            self.setHint(hintChoice['x'], hintChoice['y'], hintChoice['weight'])
+
+        elif beadsPlayed == 2:
+            hintOptions = []
+            for x in range(6, 13):
+                for y in range(6, 13):
+                    self.board[y][x]['moves'] = []
+                    self.board[y][x]['weight'] = 0
+                    if x == 6 or x == 12 or y == 6 or y == 12:
+                        position = { 'category': 'Openings', 'name': 'Third', 'x': x, 'y': y, 'weight': 1 }
+                        self.addMove(position)
+                        hintOptions.append(position)
+            hintChoice = random.choice(hintOptions)
+            self.setHint(hintChoice['x'], hintChoice['y'], hintChoice['weight'])
 
 
     def findOnePatternAllPositionsAllDirections(self, pattern, color, opponentColor, opponentLastMove):
@@ -361,10 +399,10 @@ class Board:
 
         patterns = []
         categoryLimit = 24
-        nameLimit = 29
-        tokensLimit = 56
-        symmetricLimit = 57
-        weightLimit = 60
+        nameLimit = 44
+        tokensLimit = 71
+        symmetricLimit = 72
+        weightLimit = 75
         for line in lines:
             if line == '\n':
                 continue

@@ -1,18 +1,20 @@
 from Board import Board
+from Status import Status
 
 
 class Game:
-    MatchWin = 33
     match = None
     colors = None
     beadsPlayed = 0
     currentColor = None
     opponentColor = None
     winner = None
+    loser = None
     board = None
     lastMove = None
     jumps = {}
     points = {}
+    status = None
 
 
     def __init__(self, match, colors, startingColor):
@@ -27,6 +29,8 @@ class Game:
         for color in colors:
             self.jumps[color] = 0
             self.points[color] = 0
+        self.status = Status.InProgress
+        print(self.status)
 
 
     def nextColor(self):
@@ -62,10 +66,9 @@ class Game:
 
 
     def postMove(self):
-        print(str(self.jumps))
 
         # Find every known pattern on the board for the color and opponent
-        self.board.analyze(self.currentColor, self.opponentColor, self.lastMove)
+        self.board.analyze(self.currentColor, self.opponentColor, self.lastMove, self.beadsPlayed)
 
         # Re-init points, this function will re-calcuate the points...
         self.points[self.opponentColor] = self.jumps[self.opponentColor]
@@ -76,30 +79,29 @@ class Game:
             self.jumps[self.opponentColor] += int(len(self.board.getOpponentJumps()) / 2)
             self.points[self.opponentColor] += int(len(self.board.getOpponentJumps()) / 2)
             if self.jumps[self.opponentColor] >= 5:
-                self.winner = self.opponentColor
+                self.setWinner(self.opponentColor, self.currentColor)
 
         # If the opponent's last move resulted in 5+ bead sequence...
         if self.board.getWinner(self.opponentColor):
             self.points[self.opponentColor] += 5
-            self.winner = self.opponentColor
+            self.setWinner(self.opponentColor, self.currentColor)
 
         # Add any points found as a result of analyzing the board
         self.points[self.opponentColor] += self.board.getPoints(self.opponentColor)
         self.points[self.currentColor] += self.board.getPoints(self.currentColor)
 
-        if self.winner is not None:
-            self.match.points[self.opponentColor] += self.points[self.opponentColor]
-            self.match.points[self.currentColor] += self.points[self.currentColor]
-            if self.match.points[self.opponentColor] > self.MatchWin:
-                self.match.winner = self.opponentColor
-                self.match.priorLoser = self.currentColor
-            elif self.match.points[self.currentColor] > self.MatchWin:
-                self.match.winner = self.currentColor
-                self.match.priorLoser = self.opponentColor
+        if self.isWinner():
+            self.match.updateMatchScore(self.winner, self.points[self.winner], self.loser, self.points[self.loser])
+
+
+    def setWinner(self, winner, loser):
+        self.winner = winner
+        self.loser = loser
+        self.status = Status.Finished
 
 
     def isWinner(self):
-        return self.winner != None
+        return self.status == Status.Finished
 
 
     def __str__(self):

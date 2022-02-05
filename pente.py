@@ -1,68 +1,100 @@
 from tkinter import *
+from tkinter import ttk
 from images import *
 import controller
 
 
 boardFrame = None
-color1Frame = None
-color2Frame = None
-matchFrame = None
-lastMove = None
+rightMarginFrame = None
+statusFrame = None
+hint = None
+
+statusWidgets = []
+hintLabel = None
+weightLabels = []
+moveLabels = []
 
 highlights = []
 match = None
 
+Helv40 = ('Helvetica', 40)
+Helv18 = ('Helvetica', 18)
+Helv14 = ('Helvetica', 14)
+Helv8 = ('Helvetica', 8)
+
 
 def main():
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     root = Tk()
     root.title('Pente')
-    root.geometry('590x775+20+20')
+    root.geometry('790x775+20+20')
     root.resizable(False, False)
 
+    HeaderHeight = 1
+    FooterHeight = 10
+    BoardHeight = 19
+    StatusHeight = 5
+    ActionHeight = 2
+
+    #    +-- 2 --+------ 19 ------+-- 2 --+
+    #    |       |                |       |
+    #    |       2     Header     2       |
+    #    |       |                |       |
+    #    |       +----------------+       |
+    #    |       |                |       |
+    #    |       |                |       |
+    #    |  LM   19    Board     19  RM   |
+    #    |       |                |       |
+    #    |       |                |       |
+    #    |       +----------------+       |
+    #    |       |                |       |
+    #    |       5     Status     5       |
+    #    |       |                |       |
+    #    +-- 2 --+------ 19 ------+-- 2 --+
+
+    leftMarginFrame = Frame(root)
+    rightMarginFrame = Frame(root)
     headerFrame = Frame(root)
     boardFrame = Frame(root)
-    footerFrame = Frame(root)
-    headerFrame.grid(row=0, column=0, rowspan=5, columnspan=19)
-    boardFrame.grid(row=5, column=0, rowspan=19, columnspan=19)
-    footerFrame.grid(row=24, column=0, rowspan=7, columnspan=19)
+    statusFrame = Frame(root)
 
-    color1Frame = Frame(footerFrame, height=32)
-    matchFrame = Frame(footerFrame, height=32)
-    color2Frame = Frame(footerFrame, height=32)
-    color1Frame.grid(row=0, column=0, rowspan=7, columnspan=5, padx=30, pady=5)
-    matchFrame.grid(row=0, column=5, rowspan=7, columnspan=9, padx=30, pady=5)
-    color2Frame.grid(row=0, column=14, rowspan=7, columnspan=5, padx=30, pady=5)
+    leftMarginFrame.grid(row=0, column=0, rowspan=(HeaderHeight + BoardHeight + StatusHeight + ActionHeight), columnspan=2, sticky=N)
+    rightMarginFrame.grid(row=0, column=22, rowspan=(HeaderHeight + BoardHeight + StatusHeight + ActionHeight), columnspan=2, sticky=N)
+    headerFrame.grid(row=0, column=3, rowspan=2, columnspan=19)
+    boardFrame.grid(row=2, column=3, rowspan=19, columnspan=19)
+    statusFrame.grid(row=21, column=3, rowspan=5, columnspan=19)
+    for row in range(20):
+        leftMarginFrame.grid_rowconfigure(row, minsize=30, weight=1)
+        rightMarginFrame.grid_rowconfigure(row, minsize=30, weight=1)
+    leftMarginFrame.grid_columnconfigure(0, minsize=30, weight=1)
+    for column in range(9):
+        statusFrame.grid_columnconfigure(column, minsize=30, weight=1)
 
-    Label(headerFrame, text='Pente v0.2', font=('Helvetica', 40)).grid(row=0, column=0, sticky='ew')
-    Label(headerFrame, text='by Caden Claussen and Shane Claussen', font=('Helvetica', 8)).grid(row=1, column=0, sticky='nsew')
+    Label(headerFrame, text='Pente v0.2', font=Helv40).grid(row=0, column=0, sticky=EW)
+    Label(headerFrame, text='by Shane Claussen and Caden Claussen', font=Helv8).grid(row=1, column=0, sticky=EW)
 
-    newMatch()
+    newMatch(None)
 
     root.mainloop()
 
 
-def newMatch():
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+def newMatch(e):
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
     match = controller.newMatch()
-    newGame()
+    newGame(e)
 
 
-def newGame():
-    print('Entering pente::newGame')
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+def newGame(e):
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
     match = controller.newGame()
-    print('pente::newGame() after call to controller.newGame()')
-    print(match)
     initializeBoard()
     highlights = []
     updateUx()
-    print('Exiting pente::newGame')
 
 
 def initializeBoard():
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     # Add all the 19x19 images to the boardFrame to initialize the board
     # - For each spot on the board, bind enter(), leave(), and addBead() functions
@@ -77,19 +109,25 @@ def initializeBoard():
 
 
 def enter(e):
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     # Get the x and y board positions the mouse entered
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
 
+    if match.game.board.getBead(x, y) != 'Open':
+        updateRightMargin(x, y)
+        return
+
     # The very first move must be in the center
     if match.game.beadsPlayed == 0 and (x != 9 or y != 9):
+        updateRightMargin(x, y)
         return
 
     # The starting color's second move must be 3 spaces away from the
     # center position
     if match.game.beadsPlayed == 2 and (y > 6 and y < 12 and x > 6 and x < 12):
+        updateRightMargin(x, y)
         return
 
     # Show the player's bead as they roll over each board position so
@@ -99,6 +137,8 @@ def enter(e):
     # Note: This temporary bead removed by the leave() function when
     # the player's mouse leaves the position.
     e.widget.config(image=getBeadImage(x, y, match.game.currentColor))
+    updateRightMargin(x, y)
+
 
 
 # When the mouse enters the board, if the spot is empty, the leave
@@ -107,27 +147,19 @@ def enter(e):
 # in the spot, the leave() function is responsible for setting the
 # spot back to the image that indicates the spot is empty.
 def leave(e):
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     x = int(e.widget.grid_info()['column'])
     y = int(e.widget.grid_info()['row'])
 
-    # for position in defenseHighlights:
-    #     if x == position['x'] and y == position['y']:
-    #         e.widget.config(image=getOpenImageDefense(x, y))
-    #         return
-
-    # for position in offenseHighlights:
-    #     if x == position['x'] and y == position['y']:
-    #         e.widget.config(image=getOpenImageOffense(x, y))
-    #         return
-
-    e.widget.config(image=getOpenImage(x, y))
-
+    if x == hint['x'] and y == hint['y']:
+        e.widget.config(image=getOpenImageOffense(x, y))
+    else:
+        e.widget.config(image=getOpenImage(x, y))
 
 
 def addBead(e):
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     # Get the position the bead was played at
     x = int(e.widget.grid_info()['column'])
@@ -142,25 +174,25 @@ def addBead(e):
     if match.game.beadsPlayed == 2 and (y > 6 and y < 12 and x > 6 and x < 12):
         return
 
-    lastMove = { 'x': x, 'y': y }
+    # Remove hint
+    if x != hint['x'] or y != hint['y']:
+        label = Label(boardFrame, image=getOpenImage(hint['x'], hint['y']), borderwidth=0)
+        label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
+        label.bind('<Enter>', enter)
+        label.bind('<Leave>', leave)
+        label.bind('<Button-1>', addBead)
+
+    # Add the bead
     e.widget.config(image=getBeadImage(x, y, match.game.currentColor))
-    e.widget.unbind('<Enter>')
     e.widget.unbind('<Leave>')
     e.widget.unbind('<Button-1>')
 
     match = controller.addBead(x, y)
     updateUx()
 
-    # TODO: Upate this logic to first display button(s)
-    if match.isWinner():
-        newMatch()
-    else:
-        if match.game.isWinner():
-            newGame()
-
 
 def updateUx():
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
     # Clear the old highlights revering back to the bead image without the highlight
     for position in highlights:
@@ -188,35 +220,137 @@ def updateUx():
         label = Label(boardFrame, image=getHighlightedBeadImage(x, y, match.game.board.getBead(x, y)), borderwidth=0)
         label.grid(row=y, column=x, padx=0, pady=0)
 
-    updateMatchDashboard()
-    updateColorDashboard(color1Frame, match.colors[0])
-    updateColorDashboard(color2Frame, match.colors[1])
+    hint = match.game.board.getHint()
+    label = Label(boardFrame, image=getOpenImageOffense(hint['x'], hint['y']), borderwidth=0)
+    label.grid(row=hint['y'], column=hint['x'], padx=0, pady=0)
+    label.bind('<Enter>', enter)
+    label.bind('<Leave>', leave)
+    label.bind('<Button-1>', addBead)
+
+    for statusWidget in statusWidgets:
+        statusWidget.destroy()
+
+    Color1ColumnOffset = 0
+    label = Label(statusFrame, image=getBead(match.colors[0], True if match.game.currentColor == match.colors[0] else False))
+    label.grid(row=0, column=(Color1ColumnOffset + 1), stick='w')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text='Jumps', font=Helv14)
+    label.grid(row=1, column=(Color1ColumnOffset + 0), sticky='e')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text=str(match.game.jumps[match.colors[0]]))
+    label.grid(row=1, column=(Color1ColumnOffset + 2), sticky='w')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text='Game Points', font=Helv14)
+    label.grid(row=2, column=(Color1ColumnOffset + 0), sticky='e')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text=str(match.game.points[match.colors[0]]))
+    label.grid(row=2, column=(Color1ColumnOffset + 2), sticky='w')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text='Match Points', font=Helv14)
+    label.grid(row=3, column=(Color1ColumnOffset + 0), sticky='e')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text=str(match.points[match.colors[0]]))
+    label.grid(row=3, column=(Color1ColumnOffset + 2), sticky='w')
+    statusWidgets.append(label)
+
+    if match.game.isWinner() and match.isWinner():
+        button = ttk.Button(statusFrame, text='New Match')
+        button .grid(row=1, column=5, sticky='nw')
+        button .bind('<Button-1>', newMatch)
+        statusWidgets.append(button)
+    elif match.game.isWinner():
+        print('Game winner')
+        button = ttk.Button(statusFrame, text='New Game')
+        button .grid(row=1, column=5, sticky=EW)
+        button .bind('<Button-1>', newGame)
+        statusWidgets.append(button)
+
+    Color2ColumnOffset = 5
+    label = Label(statusFrame, image=getBead(match.colors[1], True if match.game.currentColor == match.colors[1] else False))
+    label.grid(row=0, column=(Color2ColumnOffset + 4), stick='e')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text=str(match.game.jumps[match.colors[1]]))
+    label.grid(row=1, column=(Color2ColumnOffset + 3), sticky='e')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text='Jumps', font=Helv14)
+    label.grid(row=1, column=(Color2ColumnOffset + 5), sticky='w')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text=str(match.game.points[match.colors[1]]))
+    label.grid(row=2, column=(Color2ColumnOffset + 3), sticky='e')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text='Game Points', font=Helv14)
+    label.grid(row=2, column=(Color2ColumnOffset + 5), sticky='w')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text=str(match.points[match.colors[1]]))
+    label.grid(row=3, column=(Color2ColumnOffset + 3), sticky='e')
+    statusWidgets.append(label)
+
+    label = Label(statusFrame, text='Match Points', font=Helv14)
+    label.grid(row=3, column=(Color2ColumnOffset + 5), sticky='w')
+    statusWidgets.append(label)
 
 
-def updateMatchDashboard():
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+def updateRightMargin(x, y):
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint, hintLabel, weightLabels, moveLabels
 
-    Label(matchFrame, text='Match').grid(row=0, column=3, stick='n')
+    # Clear out the old weight and move labels
+    for weightLabel in weightLabels:
+        weightLabel.destroy()
+    for moveLabel in moveLabels:
+        moveLabel.destroy()
 
-    Label(matchFrame, text='Game: ' + str(match.gameCount)).grid(row=1, column=3, stick='ew')
+    HintRow = 3
+    rowOffset = 0
+    for move in match.game.board.getMoves(x, y):
 
-    Label(matchFrame, image=getBead(match.colors[0], False)).grid(row=2, column=2, stick='ew')
-    Label(matchFrame, text=match.points[match.colors[0]]).grid(row=3, column=2, stick='ew')
+        if rowOffset == 0:
+            weight = match.game.board.getWeight(x, y)
+            label = Label(rightMarginFrame, text='Hint', font=Helv18)
+            label.grid(row=HintRow, column=0, sticky='nw')
+            weightLabels.append(label)
 
-    Label(matchFrame, image=getBead(match.colors[1], False)).grid(row=2, column=4, stick='ew')
-    Label(matchFrame, text=match.points[match.colors[1]]).grid(row=3, column=4, stick='ew')
+            label = Label(rightMarginFrame, text='Position', font=Helv14)
+            label.grid(row=HintRow + 1, column=0, sticky='nw')
+            weightLabels.append(label)
 
+            position = '({0:>2}, {1:>2})'.format(x, y)
+            label = Label(rightMarginFrame, text=position, font=Helv14)
+            label.grid(row=HintRow + 1, column=1, sticky='nw')
+            weightLabels.append(label)
 
-def updateColorDashboard(frame, color):
-    global boardFrame, color1Frame, color2Frame, matchFrame, highlights, lastMove, match
+            label = Label(rightMarginFrame, text='Aggregate Weight', font=Helv14)
+            label.grid(row=HintRow + 2, column=0, sticky='nw')
+            weightLabels.append(label)
 
-    highlightCurrentColorBead = False
-    if match.game.currentColor == color:
-        highlightCurrentColorBead = True
-    Label(frame, image=getBead(color, highlightCurrentColorBead)).grid(row=1, column=2, stick='ew')
+            label = Label(rightMarginFrame, text=str(weight), font=Helv14)
+            label.grid(row=HintRow + 2, column=1, sticky='nw')
+            weightLabels.append(label)
 
-    Label(frame, text='Jumps: ' + str(match.game.jumps[color])).grid(row=2, column=2, sticky='e')
-    Label(frame, text='Points: ' + str(match.game.points[color])).grid(row=3, column=2, sticky='e')
+            label = Label(rightMarginFrame, text='Patterns', font=Helv18)
+            label.grid(row=HintRow + 4 + rowOffset, column=0, sticky='nw')
+            weightLabels.append(label)
+
+        label = Label(rightMarginFrame, text=move['name'], font=Helv14)
+        label.grid(row=(HintRow + 5 + rowOffset), column=0, sticky='nw')
+        moveLabels.append(label)
+
+        weight = str(move['weight'])
+        label = Label(rightMarginFrame, text=weight, font=Helv14)
+        label.grid(row=(HintRow + 5 + rowOffset), column=1, sticky='nw')
+        moveLabels.append(label)
+
+        rowOffset += 1
 
 
 main()

@@ -1,10 +1,11 @@
 # Features
 
-- Player vs computer option
-- Undo
 - Start game/match button
 - End of game/match button
+- Add extra points if game winning move
 - Next move hint (as an option?)
+- Undo
+- Player vs computer option
 - Three+ player capability
 - Client/server
 - Web based
