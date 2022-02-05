@@ -75,8 +75,8 @@ Offense                 Potential Jump      , o o .                    F   29
 Offense                 Jump                p o o ,                    F   30
 
 Offense                 Locked 2            c p , c                    F    2
-Offense                 Closed 2            c p , .                    F  -10
-Offense                 Closed 2            c , p .                    F  -10
+Offense                 Closed 2            c p , .                    F -100
+Offense                 Closed 2            c , p .                    F -100
 Offense                 Open 2              ! . p , . !                F   14
 
 Offense                 Locked H3           c p . , c                  F    2

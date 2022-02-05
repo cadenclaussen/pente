@@ -234,14 +234,16 @@ class Board:
                     self.addOpponentJump(position)
                     self.removeBead(position['x'], position['y'])
 
-                elif category in [ 'OpponentWin', 'OpponentPoint', 'OpponentAnnounce', 'Point', 'Announce' ]:
+                elif category in [ 'OpponentAnnounce', 'Announce' ]:
                     self.addHighlight(position)
-                    if category == 'OpponentPoint':
-                        if position['id'] not in opponentPointPositions.keys():
-                            opponentPointPositions[position['id']] = position['name']
-                    if category == 'Point':
-                        if position['id'] not in pointPositions.keys():
-                            pointPositions[position['id']] = position['name']
+
+                elif category == 'OpponentPoint':
+                    if position['id'] not in opponentPointPositions.keys():
+                        opponentPointPositions[position['id']] = position['name']
+
+                elif category == 'Point':
+                    if position['id'] not in pointPositions.keys():
+                        pointPositions[position['id']] = position['name']
 
                 elif category in [ 'Defense', 'Offense' ]:
                     self.addMove(position)

@@ -16,7 +16,7 @@ class Match:
 
 
     def __init__(self):
-        self.colors = [ 'Blue', 'Green' ]
+        self.colors = [ 'Blue', 'Red' ]
         self.gameCount = -1
         self.points[self.colors[0]] = 0
         self.points[self.colors[1]] = 0
