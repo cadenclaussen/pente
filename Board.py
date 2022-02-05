@@ -402,7 +402,7 @@ class Board:
         nameLimit = 44
         tokensLimit = 71
         symmetricLimit = 72
-        weightLimit = 75
+        weightLimit = 77
         for line in lines:
             if line == '\n':
                 continue
@@ -452,17 +452,6 @@ class Board:
                         s += 'O  '
                     else:
                         s += '.  '
-                    # weight = self.board[y][x]['weight']
-                    # if x == self.hint['x'] and y == self.hint['y']:
-                    #     s += 'O  '
-                    # elif weight == 0:
-                    #     s += '.  '
-                    # elif weight > 0 and weight < 10:
-                    #     s += str(self.board[y][x]['weight']) + '  '
-                    # elif weight < -9:
-                    #     s += '<  '
-                    # else:
-                    #     s += '>  '
                 else:
                     if self.getHighlight(x, y):
                         s += self.getBead(x, y)[0] + '  '
