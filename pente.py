@@ -87,10 +87,14 @@ def newMatch(e):
 
 def newGame(e):
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+
     match = controller.newGame()
     initializeBoard()
     highlights = []
     updateUx()
+
+    if match.game.currentColor == 'Red':
+        addBeadAI(hint['x'], hint['y'])
 
 
 def initializeBoard():
@@ -158,6 +162,16 @@ def leave(e):
         e.widget.config(image=getOpenImage(x, y))
 
 
+def addBeadAI(x, y):
+    global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
+
+    label = Label(boardFrame, image=getBeadImage(x, y, match.game.currentColor), borderwidth=0)
+    label.grid(row=y, column=x, padx=0, pady=0)
+    label.bind('<Enter>', enter)
+    match = controller.addBead(x, y)
+    updateUx()
+
+
 def addBead(e):
     global boardFrame, rightMarginFrame, statusFrame, statusWidgets, highlights, match, hint
 
@@ -189,6 +203,9 @@ def addBead(e):
 
     match = controller.addBead(x, y)
     updateUx()
+
+    if match.game.currentColor == 'Red':
+        addBeadAI(hint['x'], hint['y'])
 
 
 def updateUx():

@@ -4,7 +4,7 @@ from Status import Status
 
 
 class Match:
-    MatchWin = 7
+    MatchWin = 23
 
     colors = None
     game = None

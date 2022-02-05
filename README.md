@@ -13,7 +13,6 @@
 - Add extra points if game winning move
   - Winning jump ...
   - Increase weight of jumps that break up O3, O4, ...
-- Player vs computer option
 - Undo
 - Three+ player capability
 - Client/server
