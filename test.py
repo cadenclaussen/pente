@@ -1,21 +1,23 @@
 import random
 from Board import Board
-from Player import Player
 from Match import Match
 
 
 def testAll():
     tc('testAll')
-    match, board, players, currentPlayer = init()
+    match = Match()
+    match.newGame()
     generateRandomBoard(board, players, 150)
     print(board)
     board.analyze('Blue', 'Red', { 'x': 8, 'y': 8 })
     printMetadata( [ 'OpponentWin', 'OpponentPoint', 'OpponentAnnounce', 'Point', 'Announce' ], board)
     print(board)
 
+
 def testBoard():
     tc('testBoard')
-    match, board, players, currentPlayer = init()
+    match = Match()
+    match.newGame()
     print(board)
     board.analyze('Blue', 'Red', { 'x': 8, 'y': 8 })
     print(board)
@@ -25,24 +27,25 @@ def testBoard():
 
 def testWinningPatterns():
     tc('testWinningPatterns')
-    match, board, players, currentPlayer = init()
-    generateBeadSequence(board, 0, 0, Board.South, 9, 'Blue')
-    generateBeadSequence(board, 16, 0, Board.South, 9, 'Blue')
-    generateBeadSequence(board, 18, 0, Board.South, 9, 'Blue')
-    generateBeadSequence(board, 0, 18, Board.East, 6, 'Blue')
-    generateBeadSequence(board, 2, 2, Board.Southeast, 8, 'Blue')
-    generateBeadSequence(board, 9, 9, Board.East, 7, 'Blue')
-    generateBeadSequence(board, 9, 9, Board.South, 5, 'Blue')
-    generateBeadSequence(board, 4, 4, Board.East, 3, 'Blue')
-    generateBeadSequence(board, 6, 6, Board.East, 4, 'Blue')
-    board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 })
-    print(board)
-    printMetadata([ 'OpponentWin' ], board)
+    match = Match()
+    match.newGame()
+    generateBeadSequence(match.game.board, 0, 0, Board.South, 9, 'Blue')
+    generateBeadSequence(match.game.board, 16, 0, Board.South, 9, 'Blue')
+    generateBeadSequence(match.game.board, 18, 0, Board.South, 9, 'Blue')
+    generateBeadSequence(match.game.board, 0, 18, Board.East, 6, 'Blue')
+    generateBeadSequence(match.game.board, 2, 2, Board.Southeast, 8, 'Blue')
+    generateBeadSequence(match.game.board, 9, 9, Board.East, 7, 'Blue')
+    generateBeadSequence(match.game.board, 9, 9, Board.South, 5, 'Blue')
+    # generateBeadSequence(match.game.board, 4, 4, Board.East, 3, 'Blue')
+    # generateBeadSequence(match.game.board, 6, 6, Board.East, 4, 'Blue')
+    match.game.board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 }, 10)
+    print(match.game.board)
+    printMetadata([ 'OpponentWin' ], match.game.board)
 
 
 def testPointPatterns():
     tc('testPointPatterns')
-    match, board, players, currentPlayer = init()
+    match = Match()
     generateRandomBoard(board, players, 150)
     board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 })
     print(board)
@@ -51,7 +54,7 @@ def testPointPatterns():
 
 def testAnnouncePatterns():
     tc('testAnnouncePatterns')
-    match, board, players, currentPlayer = init()
+    match = Match()
     generateRandomBoard(board, players, 150)
     board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 })
     print(board)
@@ -61,7 +64,7 @@ def testAnnouncePatterns():
 
 def testJumpPatterns():
     tc('testJumpPatterns')
-    match, board, players, currentPlayer = init()
+    match = Match()
     generateJumpPattern(board, 9, 9, Board.North)
     generateJumpPattern(board, 9, 9, Board.Northeast)
     generateJumpPattern(board, 9, 9, Board.East)
@@ -77,7 +80,7 @@ def testJumpPatterns():
 
 def testMovePatterns():
     tc('testMovePatterns')
-    match, board, players, currentPlayer = init()
+    match = Match()
     generateRandomBoard(board, players, 150)
     board.analyze('Red', 'Blue', { 'x': 9, 'y': 9 })
     print(board)
@@ -103,13 +106,6 @@ def positions(positions):
     for position in positions:
         s += ' (' + str(position['x']) + ',' + str(position['y']) + ')'
     return s
-
-
-def init():
-    player1 = Player('Shane', 'Blue', 0)
-    player2 = Player('Caden', 'Red', 1)
-    players = [ player1, player2 ]
-    return Match(), Board(players), players, player1
 
 
 def tc(name):
@@ -150,8 +146,8 @@ def xy(x, y):
 
 
 # testAll()
-# testWinningPatterns()
+testWinningPatterns()
 # testPointPatterns()
 # testAnnouncePatterns()
-testJumpPatterns()
+# testJumpPatterns()
 # testMovePatterns()

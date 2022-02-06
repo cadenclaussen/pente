@@ -15,7 +15,7 @@ OpponentPoint           9                   0 O O O O O O O O O 0      T    0
 
 OpponentAnnounce        Open 3              0 . O O O . 0              T    0
 OpponentAnnounce        Open Holed 4        0 . O O . O . 0            F    0
-OpponentAnnounce        Closed 4            c O O O O . 0              F    0
+OpponentAnnounce        Closed 4            [ O O O O . 0              F    0
 OpponentAnnounce        Open 4              0 . O O O O . 0            T    0
 OpponentAnnounce        Open Holed 5        0 . O O O . O . 0          F    0
 OpponentAnnounce        Open Holed 5        0 . O O . O O . 0          T    0

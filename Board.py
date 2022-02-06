@@ -261,6 +261,8 @@ class Board:
             if len(positions) == 0:
                 continue
 
+            print(str(pattern))
+
             if category == 'OpponentWin':
                 self.setWinner(opponentColor)
 
@@ -386,7 +388,7 @@ class Board:
                 return True
             return False
 
-        # closed
+        # player closed
         #
         # Matches two scenarios:
         # 1. a position that is off the board
@@ -395,6 +397,18 @@ class Board:
             if (x > 18 or x < 0 or y > 18 or y < 0):
                 return True
             if not self.isOpen(x, y) and self.getBead(x, y) != color:
+                return True
+            return False
+
+        # opponent closed
+        #
+        # Matches two scenarios:
+        # 1. a position that is off the board
+        # 2. a position occupied by an opposing player's bead
+        if token == '[':
+            if (x > 18 or x < 0 or y > 18 or y < 0):
+                return True
+            if not self.isOpen(x, y) and self.getBead(x, y) != opponentColor:
                 return True
             return False
 
