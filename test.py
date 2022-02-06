@@ -46,10 +46,10 @@ def testWinningPatterns():
 def testPointPatterns():
     tc('testPointPatterns')
     match = Match()
-    generateRandomBoard(board, players, 150)
-    board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 })
-    print(board)
-    printMetadata([ 'Point', 'OpponentPoint' ], board)
+    generateRandomBoard(match.game.board, players, 150)
+    match.game.board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 })
+    print(match.game.board)
+    printMetadata([ 'Point', 'OpponentPoint' ], match.game.board)
 
 
 def testAnnouncePatterns():
@@ -146,8 +146,8 @@ def xy(x, y):
 
 
 # testAll()
-testWinningPatterns()
-# testPointPatterns()
+# testWinningPatterns()
+testPointPatterns()
 # testAnnouncePatterns()
 # testJumpPatterns()
 # testMovePatterns()
