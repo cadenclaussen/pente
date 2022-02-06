@@ -266,7 +266,7 @@ def updateUx():
 
     # Set the new highlights
     highlights = []
-    for position in match.game.board.getHighlights():
+    for position in match.game.board.getAnnounces():
         highlights.append(position)
         x = position['x']
         y = position['y']

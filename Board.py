@@ -63,39 +63,33 @@ class Board:
 
 
     #--------------------------------------------------------------------------
-    # Highlights
+    # Announces
     #--------------------------------------------------------------------------
-    def addHighlight(self, position):
+    def addAnnounce(self, position):
         self.highlights.append(position)
         self.board[position['y']][position['x']]['highlight'] = True
 
 
-    def getHighlight(self, x, y):
+    def getAnnounce(self, x, y):
         return self.board[y][x]['highlight']
 
 
-    def getHighlights(self):
+    def getAnnounces(self):
         return self.highlights
 
 
-    def clearHighlights(self):
+    def clearAnnounces(self):
         self.highlights = []
         for y in range(19):
             for x in range(19):
                 self.board[y][x]['highlight'] = False
 
 
-    def printAllHighlights(self):
-        self.printHighlights(None)
-
-
-    def printHighlights(self, category):
+    def printAnnounces(self):
         print()
-        if category is not None:
-            print(category + ' positions:')
-        for position in self.getHighlights():
-            if category == None or category == position['category']:
-                print(position['id'] + ' ' + self.xy(position['x'], position['y']))
+        print('Announces:')
+        for position in self.getAnnounces():
+            print(position['id'] + ' ' + self.xy(position['x'], position['y']))
 
 
     #--------------------------------------------------------------------------
@@ -231,7 +225,7 @@ class Board:
 
     def analyze(self, color, opponentColor, opponentLastMove, beadsPlayed):
         self.clearOpponentJumps()
-        self.clearHighlights()
+        self.clearAnnounces()
         self.clearMoves()
         self.clearWinner()
         self.clearPoints()
@@ -261,8 +255,6 @@ class Board:
             if len(positions) == 0:
                 continue
 
-            print(str(pattern))
-
             if category == 'OpponentWin':
                 self.setWinner(opponentColor)
 
@@ -273,7 +265,7 @@ class Board:
                     self.removeBead(position['x'], position['y'])
 
                 elif category in [ 'OpponentAnnounce', 'Announce' ]:
-                    self.addHighlight(position)
+                    self.addAnnounce(position)
 
                 elif category == 'OpponentPoint':
                     if position['id'] not in opponentPointPositions.keys():
@@ -473,7 +465,7 @@ class Board:
                 if self.isOpen(x, y):
                     s += '.  '
                 else:
-                    if self.getHighlight(x, y):
+                    if self.getAnnounce(x, y):
                         s += self.getBead(x, y)[0] + '  '
                     else:
                         s += self.getBead(x, y)[0].lower() + '  '

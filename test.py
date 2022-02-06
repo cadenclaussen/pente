@@ -7,10 +7,10 @@ def testAll():
     tc('testAll')
     match = Match()
     match.newGame()
-    generateRandomBoard(board, players, 150)
+    generateRandomBoard(board, 150)
     print(board)
     board.analyze('Blue', 'Red', { 'x': 8, 'y': 8 })
-    printMetadata( [ 'OpponentWin', 'OpponentPoint', 'OpponentAnnounce', 'Point', 'Announce' ], board)
+    printMetadata(match)
     print(board)
 
 
@@ -21,7 +21,7 @@ def testBoard():
     print(board)
     board.analyze('Blue', 'Red', { 'x': 8, 'y': 8 })
     print(board)
-    printMetadata([], board)
+    printMetadata(match)
     board.printMoves()
 
 
@@ -29,37 +29,36 @@ def testWinningPatterns():
     tc('testWinningPatterns')
     match = Match()
     match.newGame()
-    generateBeadSequence(match.game.board, 0, 0, Board.South, 9, 'Blue')
-    generateBeadSequence(match.game.board, 16, 0, Board.South, 9, 'Blue')
-    generateBeadSequence(match.game.board, 18, 0, Board.South, 9, 'Blue')
-    generateBeadSequence(match.game.board, 0, 18, Board.East, 6, 'Blue')
-    generateBeadSequence(match.game.board, 2, 2, Board.Southeast, 8, 'Blue')
-    generateBeadSequence(match.game.board, 9, 9, Board.East, 7, 'Blue')
-    generateBeadSequence(match.game.board, 9, 9, Board.South, 5, 'Blue')
-    # generateBeadSequence(match.game.board, 4, 4, Board.East, 3, 'Blue')
-    # generateBeadSequence(match.game.board, 6, 6, Board.East, 4, 'Blue')
-    match.game.board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 }, 10)
-    print(match.game.board)
-    printMetadata([ 'OpponentWin' ], match.game.board)
+    generateBeadSequence(match, 0, 0, Board.South, 9)
+    generateBeadSequence(match, 16, 0, Board.South, 9)
+    generateBeadSequence(match, 18, 0, Board.South, 9)
+    generateBeadSequence(match, 0, 18, Board.East, 6)
+    generateBeadSequence(match, 2, 2, Board.Southeast, 8)
+    generateBeadSequence(match, 9, 9, Board.East, 7)
+    generateBeadSequence(match, 9, 9, Board.South, 5)
+    generateBeadSequence(match, 4, 4, Board.East, 3)
+    generateBeadSequence(match, 6, 6, Board.East, 4)
+    match.game.nextColor()
+    match.game.board.analyze(match.game.currentColor, match.game.opponentColor, { 'x': 8, 'y': 8 }, 10)
+    print(match)
 
 
 def testPointPatterns():
     tc('testPointPatterns')
     match = Match()
-    generateRandomBoard(match.game.board, players, 150)
-    match.game.board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 })
-    print(match.game.board)
-    printMetadata([ 'Point', 'OpponentPoint' ], match.game.board)
+    match.newGame()
+    generateRandomBoard(match.game.board, 150)
+    match.game.board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 }, 150)
+    print(match)
 
 
 def testAnnouncePatterns():
     tc('testAnnouncePatterns')
     match = Match()
-    generateRandomBoard(board, players, 150)
-    board.analyze('Red', 'Blue', { 'x': 8, 'y': 8 })
-    print(board)
-    board.printHighlights
-    printMetadata([ 'Announce', 'OpponentAnnounce' ], board)
+    match.newGame()
+    generateRandomBoard(board, 150)
+    board.analyze(match.game.currentColor, match.game.opponentColor, { 'x': 8, 'y': 8 }, 150)
+    print(match)
 
 
 def testJumpPatterns():
@@ -73,26 +72,24 @@ def testJumpPatterns():
     generateJumpPattern(board, 9, 9, Board.Southwest)
     generateJumpPattern(board, 9, 9, Board.West)
     generateJumpPattern(board, 9, 9, Board.Northwest)
-    board.analyze('Red', 'Blue', { 'x': 9, 'y': 9 })
-    print(board)
-    printMetadata([], board)
+    board.analyze('Red', 'Blue', { 'x': 9, 'y': 9 }, 100)
+    print(match)
 
 
 def testMovePatterns():
     tc('testMovePatterns')
     match = Match()
-    generateRandomBoard(board, players, 150)
-    board.analyze('Red', 'Blue', { 'x': 9, 'y': 9 })
+    generateRandomBoard(board, 150)
+    board.analyze('Red', 'Blue', { 'x': 9, 'y': 9 }, 100)
     print(board)
     printMetadata([], board)
     board.printMoves()
 
 
-def printMetadata(highlights, board):
-    for highlight in highlights:
-        board.printHighlights(highlight)
+def printMetadata(match):
+    board = match.game.board
+    board.printAnnounces()
     print()
-    # print('highlights: ' + str(board.getHighlights()))
     print('jumps: ' + str(board.getOpponentJumps()))
     print('points[Blue]: ' + str(board.getPoints('Blue')))
     print('points[Red]: ' + str(board.getPoints('Red')))
@@ -114,9 +111,11 @@ def tc(name):
     print()
 
 
-def generateBeadSequence(board, x, y, direction, count, color):
+def generateBeadSequence(match, x, y, direction, count):
     for i in range(count):
-        board.addBead(x + direction['xOffset'] * i, y + direction['yOffset'] * i, color)
+        match.game.board.addBead(x + direction['xOffset'] * i, y + direction['yOffset'] * i, match.game.currentColor)
+        match.game.nextColor()
+        match.game.nextColor()
 
 
 def generateJumpPattern(board, x, y, direction):
@@ -126,19 +125,19 @@ def generateJumpPattern(board, x, y, direction):
     board.addBead(x + (3 * direction['xOffset']), y + (3 * direction['yOffset']), 'Blue')
 
 
-def generateRandomBoard(board, players, numberOfTurns):
-    currentPlayer = players[0]
+def generateRandomBoard(board, numberOfTurns):
+    color = 'Blue'
     for _ in range(numberOfTurns):
         while True:
             x = random.randint(0, 18)
             y = random.randint(0, 18)
             if board.isOpen(x, y):
                 break
-        board.addBead(x, y, currentPlayer.color)
-        if currentPlayer.key == 0:
-            currentPlayer = players[1]
+        board.addBead(x, y, color)
+        if color == 'Red':
+            color = 'Blue'
         else:
-            currentPlayer = players[0]
+            color = 'Red'
 
 
 def xy(x, y):
@@ -146,8 +145,8 @@ def xy(x, y):
 
 
 # testAll()
-# testWinningPatterns()
-testPointPatterns()
+testWinningPatterns()
+# testPointPatterns()
 # testAnnouncePatterns()
 # testJumpPatterns()
 # testMovePatterns()
